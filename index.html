@@ -1353,7 +1353,7 @@
 // ═══════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
 const CONFIG = {
-  model: 'claude-haiku-4-5-20251001',
+  model: 'claude-haiku-3-5-20241022',
   maxTokens: 2000
 };
 
@@ -1648,8 +1648,8 @@ Return ONLY a JSON array of exactly 12 ideas — the 12 that scored highest acro
   }
 ]`;
 
-    const result = await callClaude(prompt, '', 8000);
-    const jsonMatch = result.match(/\[[\s\S]*\]/);
+    const result = await callClaude(prompt, '', 3000);
+    const jsonMatch = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (!jsonMatch) throw new Error('Could not parse ideas. Please try again.');
     let parsed = JSON.parse(jsonMatch[0]);
     // Client-side safety filter — remove anything that slipped through under 8 overall
@@ -2287,7 +2287,7 @@ Return ONLY a JSON array of sections:
 Start with a quick-win intro. End with a clear action step. Maximum 7 sections unless the format truly demands more.`;
 
     const result = await callClaude(prompt);
-    const jsonMatch = result.match(/\[[\s\S]*\]/);
+    const jsonMatch = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (!jsonMatch) throw new Error('Could not parse outline. Please try again.');
     S.outline = JSON.parse(jsonMatch[0]);
     S.outlineBuiltFor = S.chosenName;
@@ -2371,7 +2371,7 @@ IMPORTANT: Keep the product simple and digestible. Lean heavily towards fewer se
 Return ONLY a JSON array:
 [{"title":"Section title","description":"1 sentence on what this covers","type":"intro/main content/action step/bonus"}]`;
     const result = await callClaude(prompt);
-    const match = result.match(/\[[\s\S]*\]/);
+    const match = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (!match) throw new Error('Could not parse outline. Try again.');
     S.outline = JSON.parse(match[0]);
     save();
