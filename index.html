@@ -1602,40 +1602,29 @@ async function generateIdeas() {
   try {
     const prompt = `${bizContext()}
 
-You are a world-class digital product strategist. Output ONLY a JSON array — no preamble, no brainstorming, no explanation before or after. Start your response with [ and end with ].
+Generate 8 digital product ideas for this person. Each must score 8+ on all dimensions. Be specific — name the exact person, problem, and result.
 
-Generate 12 high-scoring digital product ideas for this person. Each idea must score 8 or higher on all 5 dimensions below — only include ideas that clear that bar.
-
-BANNED: done-for-you services, generic planners/calendars, anything requiring existing skills, ideas so broad they apply to anyone.
-
-REQUIRED — every idea must name the exact person, exact painful moment, and exact result. Bad: "Social media caption templates". Good: "25 done-for-you Instagram captions for postpartum fitness coaches — plug in your offer name and post in 60 seconds".
-
-SCORING (all must be 8+):
-- demandScore: people already paying money or burning hours on this problem
-- impulseScore: someone sees this and buys immediately, no convincing needed
-- clarityScore: before/after result obvious to a stranger in 3 seconds
-- viralScore: buyers screenshot, share, or post about it unprompted
-- simplicityScore: buildable in 1-2 days and still feels impressively valuable
+Avoid: done-for-you services, generic planners, anything requiring existing skills, broad ideas.
 
 [
   {
-    "name": "Specific product title that names the exact transformation",
-    "format": "template pack / swipe file / checklist / mini guide / toolkit / prompt pack / workbook / script pack",
-    "who": "Exactly who this is for — specific, not a broad category",
-    "problem": "The urgent, specific, proven problem this solves right now",
-    "transformation": "From [specific painful state] to [specific desired result] in [timeframe]",
-    "urgency": "Why someone buys this today — cost of not having it",
-    "viralHook": "The one thing that makes buyers share this without being asked",
+    "name": "Specific title naming the exact transformation",
+    "format": "template pack or swipe file or checklist or guide or toolkit or prompt pack or workbook",
+    "who": "Exactly who this is for",
+    "problem": "The specific urgent problem it solves",
+    "transformation": "Before to after result",
+    "urgency": "Why buy today",
+    "viralHook": "Why buyers share it",
     "demandScore": 9,
-    "impulseScore": 8,
+    "impulseScore": 9,
     "clarityScore": 9,
     "viralScore": 8,
     "simplicityScore": 9,
     "overallScore": 9,
-    "verdict": "One sentence on why this idea is strong",
-    "biggestRisk": "The one thing that could hold this back",
-    "standout": "What would make this an instant bestseller",
-    "priceSweetSpot": "${S.currency}X-${S.currency}X"
+    "verdict": "Why this idea is strong",
+    "biggestRisk": "Main risk",
+    "standout": "What makes it a bestseller",
+    "priceSweetSpot": "${S.currency}15-${S.currency}37"
   }
 ]`;
 
@@ -1655,7 +1644,7 @@ SCORING (all must be 8+):
     // Client-side safety filter — remove anything that slipped through under 8 overall
     parsed = parsed.filter(idea => !idea.overallScore || idea.overallScore >= 8);
     // If somehow fewer than 6 survive, show all rather than leaving the screen empty
-    if (parsed.length < 6) parsed = JSON.parse(jsonStr);
+    if (parsed.length < 6) parsed = JSON.parse(clean.slice(clean.indexOf('['), clean.lastIndexOf(']') + 1));
     S.productIdeas = parsed;
     S.selectedIdeas = [];
     // Pre-populate validationData from embedded scores so validation screen needs no API call
