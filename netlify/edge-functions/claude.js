@@ -16,7 +16,18 @@ export default async (request) => {
 
   try {
     const body = await request.json();
-    const apiKey = Netlify.env.get('ANTHROPIC_API_KEY');
+
+    // Access API key - try Netlify first, then Deno
+    let apiKey;
+    try { apiKey = Netlify.env.get('ANTHROPIC_API_KEY'); } catch(e) {}
+    if (!apiKey) { try { apiKey = Deno.env.get('ANTHROPIC_API_KEY'); } catch(e) {} }
+
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: { message: 'API key not configured' } }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    }
 
     const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -29,14 +40,24 @@ export default async (request) => {
         model: body.model,
         max_tokens: body.max_tokens,
         system: body.system,
-        messages: body.messages
+        messages: body.messages,
+        stream: true
       })
     });
 
+    if (!anthropicResponse.ok) {
+      const errorText = await anthropicResponse.text();
+      return new Response(errorText, {
+        status: anthropicResponse.status,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    }
+
     return new Response(anthropicResponse.body, {
-      status: anthropicResponse.status,
+      status: 200,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
         'Access-Control-Allow-Origin': '*'
       }
     });
@@ -44,13 +65,7 @@ export default async (request) => {
   } catch (error) {
     return new Response(
       JSON.stringify({ error: { message: error.message } }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
     );
   }
 };
