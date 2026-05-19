@@ -1498,8 +1498,31 @@ CRITICAL WRITING RULES — these apply to every single word you write:
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error?.message || 'Something went wrong. Please try again.');
   }
-  const data = await res.json();
-  return data.content[0].text;
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split(/\r?\n/);
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            fullText += parsed.delta.text;
+          }
+        } catch (e) {}
+      }
+    }
+  }
+  if (!fullText) throw new Error('Something went wrong. Please try again.');
+  return fullText;
 }
 
 function showLoading(id) { const el = document.getElementById(id); if(el) el.style.display='flex'; }
