@@ -1658,7 +1658,7 @@ Return ONLY a JSON array of exactly 12 ideas — the 12 that scored highest acro
       else if (start !== -1 && clean[i] === '[') depth++;
       else if (start !== -1 && clean[i] === ']') { depth--; if (depth === 0) { jsonStr = clean.slice(start, i + 1); break; } }
     }
-    if (!jsonStr) throw new Error('Could not parse ideas. Please try again.');
+    if (!jsonStr) throw new Error('Debug: ' + result.substring(0, 200));
     let parsed = JSON.parse(jsonStr);
     // Client-side safety filter — remove anything that slipped through under 8 overall
     parsed = parsed.filter(idea => !idea.overallScore || idea.overallScore >= 8);
