@@ -1634,7 +1634,7 @@ SCORING (all must be 8+):
   }
 ]`;
 
-    const result = await callClaude(prompt, '', 5000);
+    const result = await callClaude(prompt, 'You output only raw JSON arrays. No explanation, no preamble, no markdown. Your entire response is valid JSON starting with [ and ending with ].', 5000);
     // Robust JSON extraction: strip code fences, then bracket-count to find the array
     const clean = result.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
     let jsonStr = null;
