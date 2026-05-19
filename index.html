@@ -1,0 +1,3766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Done In A Day — Digital Product AI Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #ef1970;
+    --pink-light: #ff8882;
+    --blush: #f1d2cb;
+    --blush-pale: #fdf3f1;
+    --cream: #fbf8f2;
+    --cream-dark: #f2ebe0;
+    --teal: #225151;
+    --text: #2D2D2D;
+    --text-soft: #666;
+    --white: #FFFFFF;
+    --border: #e8d5d0;
+    --success: #4CAF50;
+    --radius: 12px;
+    --shadow: 0 4px 20px rgba(239,25,112,0.1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Raleway', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; min-height: 100vh; }
+
+  #sidebar {
+    width: 240px; min-width: 240px;
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: fixed; top:0; left:0; bottom:0;
+    overflow-y: auto;
+    z-index: 10;
+    transition: transform 0.3s;
+  }
+  #main {
+    margin-left: 240px;
+    flex: 1;
+    padding: 40px 32px;
+    max-width: 860px;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar-logo {
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--blush);
+    margin-bottom: 16px;
+  }
+  .sidebar-logo .brand { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--pink); font-weight: 700; }
+  .sidebar-logo .product-name { font-size: 14px; color: var(--text); font-weight: 600; margin-top: 2px; }
+
+  .sidebar-module { margin-bottom: 8px; }
+  .sidebar-module-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--text-soft); font-weight: 700;
+    padding: 4px 20px; margin-bottom: 2px;
+  }
+  .sidebar-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 20px; cursor: pointer;
+    font-size: 12.5px; color: var(--text-soft);
+    transition: all 0.15s; border-left: 3px solid transparent;
+  }
+  .sidebar-step:hover { background: var(--blush-pale); color: var(--text); }
+  .sidebar-step.active { color: var(--pink); border-left-color: var(--pink); background: var(--blush-pale); font-weight: 600; }
+  .sidebar-step.done { color: var(--success); }
+  .step-dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid currentColor;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; flex-shrink: 0;
+  }
+  .sidebar-step.done .step-dot { background: var(--success); border-color: var(--success); color: white; }
+  .sidebar-step.done .step-dot::after { content: '✓'; }
+  .sidebar-step:not(.done) .step-dot::after { content: ''; }
+
+  .sidebar-progress {
+    margin: 16px 20px 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--blush);
+  }
+  .progress-bar-bg { background: var(--blush); border-radius: 10px; height: 6px; }
+  .progress-bar-fill { background: var(--pink); border-radius: 10px; height: 6px; transition: width 0.4s; }
+  .progress-text { font-size: 11px; color: var(--text-soft); margin-top: 6px; }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+
+  /* ── HEADINGS ── */
+  .screen-header { margin-bottom: 32px; }
+  .screen-tag {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--pink); font-weight: 700; margin-bottom: 8px;
+  }
+  h1 { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.3; font-family: 'Libre Baskerville', Georgia, serif; }
+  h2 { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; font-family: 'Libre Baskerville', Georgia, serif; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .screen-sub { color: var(--text-soft); font-size: 15px; margin-top: 8px; max-width: 560px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card-pink { background: var(--blush-pale); border-color: var(--blush); }
+  .card-highlight { border-color: var(--pink); }
+
+  /* ── FORM ELEMENTS ── */
+  label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--text); margin-bottom: 6px;
+  }
+  .label-note { font-weight: 400; color: var(--text-soft); font-size: 12px; margin-left: 4px; }
+  input[type="text"], input[type="password"], input[type="email"], textarea, select {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 14px; font-family: inherit;
+    background: var(--white); color: var(--text);
+    transition: border-color 0.15s;
+    resize: vertical;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--pink);
+    box-shadow: 0 0 0 3px rgba(239,25,112,0.1);
+  }
+  .form-group { margin-bottom: 20px; }
+  .form-hint { font-size: 12px; color: var(--text-soft); margin-top: 5px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 24px; border-radius: 8px; border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; font-family: inherit;
+    text-decoration: none;
+  }
+  .btn-primary { background: var(--pink); color: white; }
+  .btn-primary:hover { background: #c4005a; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(239,25,112,0.3); }
+  .btn-secondary { background: var(--blush); color: var(--pink); }
+  .btn-secondary:hover { background: var(--blush); filter: brightness(0.95); }
+  .btn-outline { background: transparent; color: var(--pink); border: 1.5px solid var(--pink); }
+  .btn-outline:hover { background: var(--blush-pale); }
+  .btn-ghost { background: transparent; color: var(--text-soft); }
+  .btn-ghost:hover { color: var(--text); }
+  .voice-chip {
+    padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: var(--white); color: var(--text-soft); font-size: 13px;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .voice-chip:hover { border-color: var(--pink); color: var(--pink); }
+  .voice-chip.selected { background: var(--pink); border-color: var(--pink); color: white; font-weight: 600; }
+  .btn-lg { padding: 15px 32px; font-size: 16px; }
+  .btn-sm { padding: 8px 16px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+
+  /* ── AI OUTPUT AREA ── */
+  .ai-output {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    min-height: 120px; white-space: pre-wrap;
+    font-size: 14px; line-height: 1.7;
+    color: var(--text);
+  }
+  .ai-output.editable {
+    border-color: var(--blush);
+    outline: none;
+  }
+  .ai-output.editable:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(239,25,112,0.1); }
+  .ai-output-wrapper { position: relative; }
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--blush); color: var(--pink);
+    border: none; border-radius: 6px; padding: 5px 12px;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+  .copy-btn:hover { background: var(--pink); color: white; }
+
+  /* ── LOADING ── */
+  .loading {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--text-soft); font-size: 14px; padding: 20px;
+  }
+  .spinner {
+    width: 20px; height: 20px; border: 2px solid var(--blush);
+    border-top-color: var(--pink); border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── IDEA CARDS ── */
+  .idea-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .idea-card {
+    background: var(--white); border: 2px solid var(--border);
+    border-radius: var(--radius); padding: 16px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .idea-card:hover { border-color: var(--pink-light); }
+  .idea-card.selected { border-color: var(--pink); background: var(--blush-pale); }
+  .idea-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .idea-card .idea-format { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--pink); margin-bottom: 6px; }
+  .idea-card p { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+  .idea-select-hint { font-size: 12px; color: var(--text-soft); margin-top: 12px; }
+
+  /* ── EXTRAS CARDS ── */
+  .extras-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .extra-card {
+    background: var(--white); border: 2px solid var(--border);
+    border-radius: var(--radius); padding: 16px; cursor: pointer;
+    transition: all 0.15s; position: relative;
+  }
+  .extra-card:hover { border-color: var(--pink-light); }
+  .extra-card.selected { border-color: var(--pink); background: var(--blush-pale); }
+  .extra-card-check {
+    display: none; position: absolute; top: 10px; right: 10px;
+    width: 20px; height: 20px; background: var(--pink); color: #fff;
+    border-radius: 50%; font-size: 11px; font-weight: 700;
+    align-items: center; justify-content: center;
+  }
+  .extra-card.selected .extra-card-check { display: flex; }
+  .extra-card-icon { font-size: 22px; margin-bottom: 8px; }
+  .extra-card-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .extra-card-desc { font-size: 12px; color: var(--text-soft); line-height: 1.5; }
+
+  /* ── PLATFORM CARDS (launch) ── */
+  .platform-card-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .platform-card {
+    background: var(--white); border: 2px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px; cursor: pointer;
+    transition: all 0.15s; position: relative; text-align: center;
+  }
+  .platform-card:hover { border-color: var(--pink-light); }
+  .platform-card.selected { border-color: var(--pink); background: var(--blush-pale); }
+  .platform-card-check {
+    display: none; position: absolute; top: 6px; right: 6px;
+    width: 18px; height: 18px; background: var(--pink); color: #fff;
+    border-radius: 50%; font-size: 10px; font-weight: 700;
+    align-items: center; justify-content: center;
+  }
+  .platform-card.selected .platform-card-check { display: flex; }
+  .platform-card-icon { font-size: 20px; margin-bottom: 4px; }
+  .platform-card-name { font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* ── LAUNCH OUTPUT CARDS ── */
+  .launch-platform-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 16px; overflow: hidden;
+  }
+  .launch-platform-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .launch-platform-header h4 { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; }
+  .launch-platform-body { padding: 16px; font-size: 13px; line-height: 1.75; white-space: pre-wrap; }
+  .launch-day-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--pink); margin: 14px 0 6px;
+  }
+  .launch-day-label:first-child { margin-top: 0; }
+
+  /* ── EXTRAS OUTPUT CARDS ── */
+  .extras-output-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 16px; overflow: hidden;
+  }
+  .extras-output-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .extras-output-header h4 { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; }
+  .extras-output-body {
+    padding: 16px; font-size: 13px; line-height: 1.75;
+    white-space: pre-wrap; outline: none;
+  }
+
+  /* ── VALIDATION CARDS ── */
+  .validation-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
+  }
+  .val-scores { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .val-score { text-align: center; }
+  .val-score .score-num { font-size: 22px; font-weight: 700; color: var(--pink); }
+  .val-score .score-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-soft); margin-top: 2px; }
+  .score-bar { height: 4px; border-radius: 2px; background: var(--blush); margin-top: 4px; }
+  .score-bar-fill { height: 4px; border-radius: 2px; background: var(--pink); }
+
+  /* ── PATH FORK CARDS ── */
+  .fork-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+  .fork-card {
+    border: 2px solid var(--border); border-radius: var(--radius);
+    padding: 24px; cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .fork-card:hover { border-color: var(--pink-light); transform: translateY(-2px); }
+  .fork-card.selected { border-color: var(--pink); background: var(--blush-pale); }
+  .fork-card .icon { font-size: 32px; margin-bottom: 12px; }
+  .fork-card h3 { font-size: 15px; margin-bottom: 8px; }
+  .fork-card p { font-size: 13px; color: var(--text-soft); line-height: 1.5; }
+  .rec-badge { background: var(--pink); color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; vertical-align: middle; margin-left: 6px; font-weight: 700; }
+
+  /* ── OUTLINE BUILDER ── */
+  .outline-section {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 16px; margin-bottom: 10px;
+    display: flex; align-items: flex-start; gap: 12px;
+    cursor: default;
+  }
+  .outline-section.dragging { opacity: 0.4; border-style: dashed; }
+  .outline-section.drag-over { border-color: var(--pink); background: var(--blush-pale); }
+  .drag-handle {
+    cursor: grab; color: var(--text-soft); font-size: 16px;
+    padding: 2px 4px; flex-shrink: 0; margin-top: 4px;
+    user-select: none;
+  }
+  .drag-handle:active { cursor: grabbing; }
+  .outline-section-num {
+    background: var(--blush); color: var(--pink);
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .outline-section-content { flex: 1; }
+  .outline-section input { font-weight: 600; border: none; font-size: 14px; padding: 0; background: transparent; width: 100%; }
+  .outline-section input:focus { outline: none; border-bottom: 1.5px solid var(--pink); }
+  .outline-edit-hint { font-size: 11px; color: var(--pink); margin-top: 3px; display: none; }
+  .outline-section input:focus + .outline-edit-hint { display: block; }
+
+  /* ── CONTENT BUILDER ── */
+  .content-section-nav {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .section-nav-btn {
+    padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: var(--white); font-size: 12px; cursor: pointer; font-family: inherit;
+    transition: all 0.15s;
+  }
+  .section-nav-btn.active { background: var(--pink); color: white; border-color: var(--pink); }
+  .section-nav-btn.done { border-color: var(--success); color: var(--success); }
+
+  /* ── KARTRA SECTION ── */
+  .kartra-hero {
+    background: linear-gradient(135deg, #225151 0%, #173838 100%);
+    border-radius: var(--radius); padding: 28px; margin-bottom: 16px; color: white;
+  }
+  .kartra-hero h3 { color: white; font-size: 18px; margin-bottom: 8px; }
+  .kartra-hero p { color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; }
+  .kartra-pricing-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .kartra-plan {
+    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 14px 18px;
+    border: 1px solid rgba(255,255,255,0.2); flex: 1; min-width: 140px;
+  }
+  .kartra-plan.recommended { background: var(--pink); border-color: var(--pink); }
+  .kartra-plan .plan-name { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+  .kartra-plan .plan-price { font-size: 22px; font-weight: 700; margin: 4px 0; }
+  .kartra-plan .plan-note { font-size: 11px; opacity: 0.7; }
+  .affiliate-disclosure { font-size: 11px; color: var(--text-soft); margin-top: 12px; font-style: italic; }
+
+  /* ── DOWNLOAD SCREEN ── */
+  .download-asset {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
+  }
+  .download-asset h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .download-asset .asset-content {
+    background: var(--cream); border-radius: 8px; padding: 14px;
+    font-size: 13px; color: var(--text); white-space: pre-wrap;
+    max-height: 200px; overflow-y: auto; line-height: 1.6;
+  }
+
+  /* ── WELCOME SCREEN ── */
+  .welcome-hero {
+    text-align: center; padding: 40px 20px;
+  }
+  .welcome-hero .logo-text {
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-size: 13px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--pink); margin-bottom: 12px;
+  }
+  .welcome-hero h1 { font-size: 36px; margin-bottom: 16px; }
+  .welcome-hero p { font-size: 17px; color: var(--text-soft); max-width: 480px; margin: 0 auto 32px; }
+
+  /* ── ALERTS ── */
+  .alert { padding: 14px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+  .alert-error { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; }
+  .alert-success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #16A34A; }
+  .alert-info { background: var(--blush-pale); border: 1px solid var(--blush); color: var(--pink); }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; }
+  .checklist li { padding: 8px 0; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; border-bottom: 1px solid var(--cream-dark); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before { content: '✓'; color: var(--pink); font-weight: 700; flex-shrink: 0; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    #sidebar { transform: translateX(-100%); }
+    #sidebar.open { transform: none; }
+    #main { margin-left: 0; padding: 20px 16px; }
+    .idea-grid { grid-template-columns: 1fr; }
+    .fork-cards { grid-template-columns: 1fr; }
+    .kartra-pricing-row { flex-direction: column; }
+    h1 { font-size: 24px; }
+  }
+  .menu-toggle {
+    display: none; position: fixed; top: 16px; left: 16px; z-index: 20;
+    background: var(--pink); color: white; border: none; border-radius: 8px;
+    padding: 8px 12px; cursor: pointer; font-size: 16px;
+  }
+  @media (max-width: 768px) { .menu-toggle { display: block; } }
+
+  /* ── MISC ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  .text-pink { color: var(--pink); }
+  .text-soft { color: var(--text-soft); }
+  .font-serif { font-family: 'Libre Baskerville', Georgia, serif; }
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mb-8 { margin-bottom: 8px; }
+  .chip {
+    display: inline-block; background: var(--blush); color: var(--pink);
+    border-radius: 20px; padding: 3px 12px; font-size: 12px; font-weight: 600;
+    margin: 2px;
+  }
+  .section-complete-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0;
+    border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+<div id="app">
+<!-- ═══════════════════════════════════════ SIDEBAR ═══════════════════════════════════════ -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Mothers of Enterprise</div>
+    <div class="product-name">Done In A Day Toolkit</div>
+  </div>
+
+  <div class="sidebar-module">
+    <div class="sidebar-module-label">Setup</div>
+    <div class="sidebar-step" id="nav-welcome" onclick="goTo('welcome')">
+      <div class="step-dot"></div> Welcome
+    </div>
+    <div class="sidebar-step" id="nav-business" onclick="goTo('business')">
+      <div class="step-dot"></div> Your Business
+    </div>
+  </div>
+
+  <div class="sidebar-module">
+    <div class="sidebar-module-label">Module 1 — Choose Your Winner</div>
+    <div class="sidebar-step" id="nav-m1-ideas" onclick="goTo('m1-ideas')">
+      <div class="step-dot"></div> Idea Generator
+    </div>
+    <div class="sidebar-step" id="nav-m1-validation" onclick="goTo('m1-validation')">
+      <div class="step-dot"></div> Validation Check
+    </div>
+    <div class="sidebar-step" id="nav-m1-winner" onclick="goTo('m1-winner')">
+      <div class="step-dot"></div> Pick Your Winner
+    </div>
+    <div class="sidebar-step" id="nav-m1-naming" onclick="goTo('m1-naming')">
+      <div class="step-dot"></div> Name + Price
+    </div>
+    <div class="sidebar-step" id="nav-m1-confirm" onclick="goTo('m1-confirm')">
+      <div class="step-dot"></div> Confirm Product
+    </div>
+  </div>
+
+  <div class="sidebar-module">
+    <div class="sidebar-module-label">Module 2 — Create Your Product</div>
+    <div class="sidebar-step" id="nav-fork" onclick="goTo('fork')">
+      <div class="step-dot"></div> How To Build It
+    </div>
+    <div class="sidebar-step" id="nav-m2-outline" onclick="goTo('m2-outline')">
+      <div class="step-dot"></div> Your Outline
+    </div>
+    <div class="sidebar-step" id="nav-m2-content" onclick="goTo('m2-content')">
+      <div class="step-dot"></div> Write Your Content
+    </div>
+    <div class="sidebar-step" id="nav-m2-extras" onclick="goTo('m2-extras')">
+      <div class="step-dot"></div> Extras + Templates
+    </div>
+    <div class="sidebar-step" id="nav-m2-preview" onclick="goTo('m2-preview')">
+      <div class="step-dot"></div> Product Preview
+    </div>
+  </div>
+
+  <div class="sidebar-module">
+    <div class="sidebar-module-label">Module 3 — Bring It To Life</div>
+    <div class="sidebar-step" id="nav-m3-design" onclick="goTo('m3-design')">
+      <div class="step-dot"></div> Design Guide
+    </div>
+    <div class="sidebar-step" id="nav-m3-platform" onclick="goTo('m3-platform')">
+      <div class="step-dot"></div> Your Platform
+    </div>
+    <div class="sidebar-step" id="nav-m3-emails" onclick="goTo('m3-emails')">
+      <div class="step-dot"></div> Welcome Emails
+    </div>
+    <div class="sidebar-step" id="nav-m3-sales" onclick="goTo('m3-sales')">
+      <div class="step-dot"></div> Sales Page Copy
+    </div>
+    <div class="sidebar-step" id="nav-m3-launch" onclick="goTo('m3-launch')">
+      <div class="step-dot"></div> 3-Day Launch Plan
+    </div>
+  </div>
+
+  <div class="sidebar-module">
+    <div class="sidebar-module-label">Finish</div>
+    <div class="sidebar-step" id="nav-download" onclick="goTo('download')">
+      <div class="step-dot"></div> Download Everything
+    </div>
+  </div>
+
+  <div class="sidebar-progress">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-text" id="progressText">0 of 16 steps complete</div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════ MAIN ═══════════════════════════════════════ -->
+<main id="main">
+
+<!-- ── SCREEN: WELCOME ── -->
+<div class="screen active" id="screen-welcome">
+  <div class="welcome-hero">
+    <div class="logo-text">Done In A Day</div>
+    <h1 class="font-serif">Your digital product,<br>built today.</h1>
+    <p>This tool walks you through every step — from idea to launch-ready. AI works alongside you. Your expertise leads the way.</p>
+    <button class="btn btn-primary btn-lg" onclick="markDone('welcome'); goTo('business')">Let's build your product →</button>
+    <p style="font-size:13px; color:var(--text-soft); margin-top:20px;">Your progress saves automatically. Come back any time.</p>
+  </div>
+
+  <div class="card card-pink" style="max-width:520px; margin:0 auto;">
+    <h3>What you'll have by the end</h3>
+    <ul class="checklist mt-8">
+      <li>A finished, structured digital product</li>
+      <li>Product page copy ready to paste into Kartra</li>
+      <li>2 customer welcome emails, pre-formatted</li>
+      <li>A full sales page, written and ready</li>
+      <li>A personalised 3-day launch plan</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── SCREEN: BUSINESS SETUP ── -->
+<div class="screen" id="screen-business">
+  <div class="screen-header">
+    <div class="screen-tag">Setup</div>
+    <h1>Tell me about your business</h1>
+    <p class="screen-sub">You fill this in once. Everything else gets personalised around it.</p>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label>Your first name</label>
+      <input type="text" id="userName" placeholder="e.g. Sarah" />
+    </div>
+    <div class="form-group">
+      <label>Your currency</label>
+      <select id="userCurrency">
+        <optgroup label="Americas">
+          <option value="$" data-code="USD">$ US Dollar (USD)</option>
+          <option value="C$" data-code="CAD">C$ Canadian Dollar (CAD)</option>
+          <option value="MX$" data-code="MXN">MX$ Mexican Peso (MXN)</option>
+          <option value="R$" data-code="BRL">R$ Brazilian Real (BRL)</option>
+        </optgroup>
+        <optgroup label="Europe">
+          <option value="£" data-code="GBP">£ British Pound (GBP)</option>
+          <option value="€" data-code="EUR">€ Euro (EUR)</option>
+          <option value="CHF" data-code="CHF">CHF Swiss Franc (CHF)</option>
+          <option value="kr" data-code="SEK">kr Swedish Krona (SEK)</option>
+          <option value="zł" data-code="PLN">zł Polish Złoty (PLN)</option>
+        </optgroup>
+        <optgroup label="Middle East">
+          <option value="AED" data-code="AED">AED UAE Dirham (AED)</option>
+          <option value="SAR" data-code="SAR">SAR Saudi Riyal (SAR)</option>
+          <option value="KWD" data-code="KWD">KWD Kuwaiti Dinar (KWD)</option>
+          <option value="QAR" data-code="QAR">QAR Qatari Riyal (QAR)</option>
+          <option value="BHD" data-code="BHD">BHD Bahraini Dinar (BHD)</option>
+          <option value="OMR" data-code="OMR">OMR Omani Rial (OMR)</option>
+          <option value="EGP" data-code="EGP">EGP Egyptian Pound (EGP)</option>
+          <option value="JOD" data-code="JOD">JOD Jordanian Dinar (JOD)</option>
+          <option value="ILS" data-code="ILS">₪ Israeli Shekel (ILS)</option>
+          <option value="TRY" data-code="TRY">TRY Turkish Lira (TRY)</option>
+        </optgroup>
+        <optgroup label="Asia Pacific">
+          <option value="A$" data-code="AUD">A$ Australian Dollar (AUD)</option>
+          <option value="NZ$" data-code="NZD">NZ$ New Zealand Dollar (NZD)</option>
+          <option value="¥" data-code="JPY">¥ Japanese Yen (JPY)</option>
+          <option value="CN¥" data-code="CNY">CN¥ Chinese Yuan (CNY)</option>
+          <option value="₩" data-code="KRW">₩ South Korean Won (KRW)</option>
+          <option value="S$" data-code="SGD">S$ Singapore Dollar (SGD)</option>
+          <option value="HK$" data-code="HKD">HK$ Hong Kong Dollar (HKD)</option>
+          <option value="₹" data-code="INR">₹ Indian Rupee (INR)</option>
+          <option value="₨" data-code="PKR">₨ Pakistani Rupee (PKR)</option>
+          <option value="৳" data-code="BDT">৳ Bangladeshi Taka (BDT)</option>
+          <option value="Rp" data-code="IDR">Rp Indonesian Rupiah (IDR)</option>
+          <option value="RM" data-code="MYR">RM Malaysian Ringgit (MYR)</option>
+          <option value="฿" data-code="THB">฿ Thai Baht (THB)</option>
+          <option value="₱" data-code="PHP">₱ Philippine Peso (PHP)</option>
+          <option value="NT$" data-code="TWD">NT$ Taiwan Dollar (TWD)</option>
+        </optgroup>
+        <optgroup label="Africa">
+          <option value="R" data-code="ZAR">R South African Rand (ZAR)</option>
+          <option value="KSh" data-code="KES">KSh Kenyan Shilling (KES)</option>
+          <option value="₦" data-code="NGN">₦ Nigerian Naira (NGN)</option>
+          <option value="GH₵" data-code="GHS">GH₵ Ghanaian Cedi (GHS)</option>
+        </optgroup>
+      </select>
+      <div class="form-hint">This is used for all price suggestions throughout the tool.</div>
+    </div>
+    <div class="form-group">
+      <label>Who is your audience?
+        <span class="label-note">— be specific</span>
+      </label>
+      <input type="text" id="audience" placeholder="e.g. Mums who want to start an online business while their kids are at school" />
+      <p class="form-hint">The more specific you are, the better your product ideas will be.</p>
+    </div>
+    <div class="form-group">
+      <label>What 3–5 topics do you help them with?
+        <span class="label-note">— one per line</span>
+      </label>
+      <textarea id="topics" rows="5" placeholder="e.g.&#10;Starting an online business from scratch&#10;Building a simple email list&#10;Creating and selling digital products&#10;Time management for busy mums"></textarea>
+    </div>
+    <div class="form-group">
+      <label>What transformation do you provide?</label>
+      <input type="text" id="transformation" placeholder="e.g. From overwhelmed and stuck to running a simple, profitable online business" />
+    </div>
+    <div class="form-group">
+      <label>How would you describe your brand voice? <span class="label-note">Pick one or describe your own below</span></label>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;" id="voiceChips">
+        <button type="button" class="voice-chip" onclick="selectVoiceChip(this, 'warm and conversational, like a supportive big sister')">Warm and conversational</button>
+        <button type="button" class="voice-chip" onclick="selectVoiceChip(this, 'professional and confident, clear and direct')">Professional and confident</button>
+        <button type="button" class="voice-chip" onclick="selectVoiceChip(this, 'fun and playful, upbeat with lots of personality')">Fun and playful</button>
+        <button type="button" class="voice-chip" onclick="selectVoiceChip(this, 'calm and nurturing, gentle and encouraging')">Calm and nurturing</button>
+        <button type="button" class="voice-chip" onclick="selectVoiceChip(this, 'bold and motivating, straight-talking and energetic')">Bold and motivating</button>
+        <button type="button" class="voice-chip" onclick="selectVoiceChip(this, 'relatable and honest, like a trusted friend sharing real talk')">Relatable and honest</button>
+      </div>
+      <input type="text" id="brandVoice" placeholder="Or describe your own — e.g. 'like a knowledgeable friend who keeps it real and makes you laugh'" />
+      <div class="form-hint">The AI will use this to write all your content. The more specific you are, the better it sounds.</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="saveBusiness()">Save and continue →</button>
+  </div>
+</div>
+
+<!-- ── SCREEN: M1 IDEAS ── -->
+<div class="screen" id="screen-m1-ideas">
+  <div class="screen-header">
+    <div class="screen-tag">Module 1 — Step 1 of 5</div>
+    <h1>Let's find your product idea</h1>
+    <p class="screen-sub">Based on your audience and topics, I'll generate product ideas you could create and sell. Select your 2–3 favourites to take to validation.</p>
+  </div>
+
+  <div id="ideas-loading" class="loading" style="display:none">
+    <div class="spinner"></div>
+    <div>
+      <div>Generating ideas for your audience...</div>
+      <div style="font-size:12px; color:var(--text-soft); margin-top:6px;">This step analyses your audience and topics in depth — it can take up to a minute. Worth the wait!</div>
+    </div>
+  </div>
+  <div id="ideas-error" class="alert alert-error" style="display:none"></div>
+
+  <div id="ideas-generate-btn">
+    <button class="btn btn-primary btn-lg" onclick="generateIdeas()">Generate my product ideas →</button>
+    <p style="font-size:12px; color:var(--text-soft); margin-top:10px;">This can take up to a minute — the AI is thinking carefully about your specific audience.</p>
+  </div>
+
+  <div id="ideas-output" style="display:none">
+    <div class="card card-pink" style="margin-bottom:20px;">
+      <p style="font-size:13px; margin-bottom:6px;"><strong>How this works:</strong> Browse the ideas below and click to select your 2–3 favourites — then we'll validate them against real commercial criteria.</p>
+      <p style="font-size:13px; color:var(--text-soft);">Don't love any of these? Hit <strong>Generate more ideas</strong> at the bottom for a fresh set.</p>
+    </div>
+    <p class="idea-select-hint" style="font-size:15px; font-weight:700; color:var(--text); margin-bottom:16px;">Select your 2–3 favourites to take to validation.</p>
+    <div class="idea-grid" id="ideaGrid"></div>
+    <div id="ideas-selected-count" class="alert alert-info mt-16" style="display:none"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="ideas-next-btn" onclick="goTo('m1-validation')" disabled>Validate my top ideas →</button>
+      <button class="btn btn-outline" onclick="generateIdeas()">Generate more ideas</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M1 VALIDATION ── -->
+<div class="screen" id="screen-m1-validation">
+  <div class="screen-header">
+    <div class="screen-tag">Module 1 — Step 2 of 5</div>
+    <h1>Validation check</h1>
+    <p class="screen-sub">Let's see how your shortlisted ideas stack up before you commit to one.</p>
+  </div>
+
+  <div id="val-error" class="alert alert-error" style="display:none"></div>
+  <div id="val-generate-btn" style="display:none"></div>
+  <div id="val-output">
+    <div id="valCards"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goTo('m1-winner')">Choose my winner →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M1 WINNER ── -->
+<div class="screen" id="screen-m1-winner">
+  <div class="screen-header">
+    <div class="screen-tag">Module 1 — Step 3 of 5</div>
+    <h1>Pick your winner</h1>
+    <p class="screen-sub">One product. The one you feel most excited and confident about.</p>
+  </div>
+
+  <div id="winner-cards"></div>
+
+  <div class="form-group mt-16">
+    <label>What format will it be? <span class="label-note">— not sure? Use the button below</span></label>
+    <select id="productFormat">
+      <option value="">Select a format...</option>
+      <optgroup label="Written">
+        <option value="PDF guide">PDF Guide</option>
+        <option value="workbook (PDF)">Workbook (PDF)</option>
+        <option value="checklist">Checklist</option>
+        <option value="template pack">Template Pack</option>
+        <option value="swipe file">Swipe File</option>
+        <option value="script pack">Script Pack</option>
+        <option value="done-for-you email templates">Done-For-You Email Templates</option>
+        <option value="prompt pack (copy-paste prompts)">Prompt Pack (copy-paste prompts)</option>
+        <option value="planner">Planner</option>
+        <option value="toolkit (mix of templates, checklists and guides)">Toolkit (mix of templates, checklists and guides)</option>
+      </optgroup>
+      <optgroup label="Video + Written (Suzy's go-to!)">
+        <option value="workbook with video training (3–5 short videos)">Workbook + Video Training (3–5 short videos)</option>
+        <option value="PDF guide with video walkthrough">PDF Guide + Video Walkthrough</option>
+        <option value="template pack with video tutorials">Template Pack + Video Tutorials</option>
+        <option value="mini course (short videos with worksheets)">Mini Course (short videos + worksheets)</option>
+      </optgroup>
+      <optgroup label="Video / Audio">
+        <option value="mini video course (3–5 short videos, no workbook)">Mini Video Course (no workbook)</option>
+        <option value="audio training">Audio Training</option>
+        <option value="recorded workshop (1 video, 60–90 mins)">Recorded Workshop (60–90 mins)</option>
+      </optgroup>
+      <optgroup label="Interactive / Digital">
+        <option value="interactive AI-powered tool (HTML)">Interactive AI-Powered Tool (like this one)</option>
+        <option value="email course (delivered by email over 5–7 days)">Email Course (delivered over 5–7 days)</option>
+        <option value="Notion template">Notion Template</option>
+        <option value="Canva template pack">Canva Template Pack</option>
+        <option value="spreadsheet tool">Spreadsheet Tool</option>
+      </optgroup>
+    </select>
+    <div class="form-hint">Not sure which format suits your product? Click "Help me choose" and the AI will recommend the best fit.</div>
+  </div>
+
+  <div id="format-help-btn-wrap">
+    <button class="btn btn-outline btn-sm" onclick="helpChooseFormat()">Help me choose a format →</button>
+  </div>
+  <div id="format-help-loading" class="loading" style="display:none; margin-top:12px;">
+    <div class="spinner"></div> Thinking about the best format for your product...
+  </div>
+  <div id="format-help-output" class="card card-pink" style="display:none; margin-top:12px;">
+    <h3 style="margin-bottom:8px;">Format recommendation</h3>
+    <div id="format-help-text" style="font-size:14px; line-height:1.7;"></div>
+    <button class="btn btn-sm btn-ghost" style="margin-top:10px;" onclick="hideEl('format-help-output'); showEl('format-help-btn-wrap');">Close</button>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="confirmWinner()">Confirmed — name and price this →</button>
+  </div>
+</div>
+
+<!-- ── SCREEN: M1 NAMING ── -->
+<div class="screen" id="screen-m1-naming">
+  <div class="screen-header">
+    <div class="screen-tag">Module 1 — Step 4 of 5</div>
+    <h1>Name and price your product</h1>
+    <p class="screen-sub">A good name does half the selling for you. Let's get this right.</p>
+  </div>
+
+  <div id="naming-loading" class="loading" style="display:none">
+    <div class="spinner"></div> Generating names and pricing options...
+  </div>
+  <div id="naming-error" class="alert alert-error" style="display:none"></div>
+  <div id="naming-generate-btn">
+    <button class="btn btn-primary" onclick="generateNaming()">Generate names and pricing →</button>
+  </div>
+  <div id="naming-output" style="display:none">
+    <div id="namingCards"></div>
+
+    <div class="card mt-16">
+      <h3>Your final choices</h3>
+      <div class="form-group mt-8">
+        <label>Chosen product name</label>
+        <input type="text" id="chosenName" placeholder="Type or edit your chosen name" />
+      </div>
+      <div class="form-group">
+        <label>Chosen price</label>
+        <input type="text" id="chosenPrice" placeholder="e.g. 27" />
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="confirmNaming()">Confirm and continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M1 CONFIRM ── -->
+<div class="screen" id="screen-m1-confirm">
+  <div class="screen-header">
+    <div class="screen-tag">Module 1 — Complete</div>
+    <h1>Your product is chosen.</h1>
+    <p class="screen-sub">Here's what you're building. Review this before we move on.</p>
+  </div>
+
+  <div class="card card-highlight">
+    <div id="productSummaryCard"></div>
+  </div>
+
+  <div class="btn-row mt-24">
+    <button class="btn btn-primary btn-lg" onclick="confirmAndBuild()">Let's build this product →</button>
+    <button class="btn btn-ghost" onclick="goTo('m1-naming')">Change name or price</button>
+  </div>
+</div>
+
+<!-- ── SCREEN: FORK ── -->
+<div class="screen" id="screen-fork">
+  <div class="screen-header">
+    <div class="screen-tag">Module 2 — Before we begin</div>
+    <h1>How do you want to build this?</h1>
+    <p class="screen-sub">This is the most important decision in the whole tool. Read both options carefully.</p>
+  </div>
+
+  <div class="fork-cards">
+    <div class="fork-card" id="pathA-card" onclick="selectPath('A')">
+      <div class="icon">✍️</div>
+      <h3>You Lead, AI Assists <span class="rec-badge">Recommended</span></h3>
+      <p style="margin-bottom:10px;">Your knowledge and expertise shape everything. You build the outline yourself — section by section — then AI helps you spot gaps, polish your ideas, and turn your rough notes into finished content. Nobody else will have this product because nobody else has your experience.</p>
+      <p style="font-size:12px; color:var(--pink); font-weight:600;">Best for: unique, authority-led products that stand out</p>
+    </div>
+    <div class="fork-card" id="pathB-card" onclick="selectPath('B')">
+      <div class="icon">⚡</div>
+      <h3>AI Leads, You Refine</h3>
+      <p style="margin-bottom:10px;">AI generates a full outline and draft content based on your topic and audience. You review, edit, add your stories, and make it yours. Faster to produce — but requires more editing to make it feel personal.</p>
+      <p style="font-size:12px; color:var(--text-soft); font-weight:600;">Best for: topics you know well but want a fast first draft of</p>
+    </div>
+  </div>
+
+  <div id="fork-selected-info" class="alert alert-info mt-16" style="display:none"></div>
+
+  <div class="btn-row mt-24">
+    <button class="btn btn-primary" id="fork-next-btn" onclick="goTo('m2-outline')" disabled>Start building →</button>
+  </div>
+</div>
+
+<!-- ── SCREEN: M2 OUTLINE ── -->
+<div class="screen" id="screen-m2-outline">
+  <div class="screen-header">
+    <div class="screen-tag">Module 2 — Step 1</div>
+    <h1 id="outline-screen-title">Build your outline</h1>
+    <p class="screen-sub" id="outline-screen-sub">Structure your product before writing the content.</p>
+  </div>
+
+  <div id="outline-loading" class="loading" style="display:none">
+    <div class="spinner"></div> Creating your product outline...
+  </div>
+  <div id="outline-error" class="alert alert-error" style="display:none"></div>
+
+  <!-- Path A: User builds their own outline -->
+  <div id="outline-pathA-start" style="display:none;">
+    <div class="card card-pink" style="margin-bottom:16px;">
+      <p style="font-size:14px; font-weight:600; margin-bottom:6px;">You're leading this — start by mapping your sections</p>
+      <p style="font-size:13px; color:var(--text-soft);">Think about the journey your buyer takes through this product. What do they need to know first? What's the natural next step? Add each section below — you can reorder them as you go. Don't overthink it: 4–6 focused sections is usually perfect.</p>
+    </div>
+    <div id="outline-pathA-blank">
+      <div id="outlineSections"></div>
+      <button class="btn btn-outline btn-sm mt-8" onclick="addOutlineSection()">+ Add section</button>
+      <div class="card" style="margin-top:20px;">
+        <p style="font-size:13px; font-weight:600; margin-bottom:6px;">Not sure where to start?</p>
+        <p style="font-size:13px; color:var(--text-soft); margin-bottom:10px;">Tell AI what your product covers and ask it to suggest some section ideas — you can pick and choose what fits.</p>
+        <button class="btn btn-outline btn-sm" onclick="showAISuggestions()">Get AI section suggestions →</button>
+      </div>
+      <div id="ai-suggestions-area" style="display:none; margin-top:12px;">
+        <div id="ai-suggestions-loading" class="loading" style="display:none;"><div class="spinner"></div> Thinking of suggestions...</div>
+        <div id="ai-suggestions-output" class="card" style="display:none;">
+          <p style="font-size:13px; font-weight:600; margin-bottom:8px;">Section ideas — click any to add it to your outline</p>
+          <div id="ai-suggestions-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px;" id="outline-pathA-feedback-card" style="display:none;">
+      <p style="font-size:13px; font-weight:600; margin-bottom:8px;">Want AI to check your outline?</p>
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:8px;">Once you've added your sections, AI can flag any blindspots, suggest a better order, or point out what might be missing.</p>
+      <button class="btn btn-outline btn-sm" onclick="getAIOutlineFeedback()">Check my outline for blindspots →</button>
+      <div id="outline-ai-feedback" style="display:none; margin-top:12px;"></div>
+    </div>
+    <div class="btn-row mt-24">
+      <button class="btn btn-primary" onclick="confirmOutline()">Outline looks good — let's write the content →</button>
+    </div>
+  </div>
+
+  <!-- Path B: AI generates the outline -->
+  <div id="outline-generate-btn" style="display:none;">
+    <button class="btn btn-primary" onclick="generateOutline()">Generate my outline →</button>
+  </div>
+
+  <div id="outline-output" style="display:none">
+    <div class="card card-pink" style="margin-bottom:16px;">
+      <p style="font-size:13px; font-weight:600; margin-bottom:4px;">How to edit your outline</p>
+      <ul style="font-size:13px; color:var(--text-soft); padding-left:16px; line-height:2;">
+        <li><strong>Click any section title to rename it</strong> — just click and type</li>
+        <li><strong>Drag the ≡ handle</strong> on the left to reorder sections</li>
+        <li><strong>Click ✕</strong> to remove a section you don't need</li>
+        <li><strong>Use "Give feedback"</strong> below if you want AI to revise the whole outline</li>
+      </ul>
+    </div>
+    <div id="outlineSectionsB"></div>
+    <button class="btn btn-outline btn-sm mt-8" onclick="addOutlineSection()">+ Add section</button>
+
+    <div class="card" style="margin-top:20px;">
+      <p style="font-size:13px; font-weight:600; margin-bottom:8px;">Want AI to revise this outline?</p>
+      <textarea id="outlineFeedback" rows="2" placeholder="e.g. This is too long — simplify it to 5 sections max. Or: Add a section about pricing. Or: Make it more beginner-friendly." style="font-size:13px;"></textarea>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="regenerateOutlineWithFeedback()">Revise outline with my feedback →</button>
+    </div>
+
+    <div class="btn-row mt-24">
+      <button class="btn btn-primary" onclick="confirmOutline()">Outline looks good — let's write the content →</button>
+      <button class="btn btn-ghost" onclick="generateOutline()">Start fresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M2 CONTENT ── -->
+<div class="screen" id="screen-m2-content">
+  <div class="screen-header">
+    <div class="screen-tag" id="content-screen-tag">Module 2 — Step 2</div>
+    <h1 id="content-screen-title">Write your content</h1>
+    <p class="screen-sub" id="content-screen-sub">Work through each section of your outline. Take your time — this is the heart of your product.</p>
+  </div>
+
+  <div class="content-section-nav" id="sectionNav"></div>
+
+  <div id="content-section-area"></div>
+</div>
+
+<!-- ── SCREEN: M2 EXTRAS ── -->
+<div class="screen" id="screen-m2-extras">
+  <div class="screen-header">
+    <div class="screen-tag">Module 2 — Step 3</div>
+    <h1>Extras and templates</h1>
+    <p class="screen-sub">Optional but valuable — these give your buyers something to interact with, not just read.</p>
+  </div>
+
+  <div id="extras-loading" class="loading" style="display:none">
+    <div class="spinner"></div> Creating your extras...
+  </div>
+  <div id="extras-error" class="alert alert-error" style="display:none"></div>
+
+  <div id="extras-generate-btn">
+    <p style="font-size:13px; color:var(--text-soft); margin-bottom:16px;">Select the ones you want to include. You can pick as many as you like.</p>
+    <div class="extras-card-grid">
+      <div class="extra-card selected" id="extra-card-quickstart" onclick="toggleExtraCard(this,'extra-quickstart')">
+        <div class="extra-card-check">✓</div>
+        <div class="extra-card-icon">✅</div>
+        <div class="extra-card-title">Quick-start checklist</div>
+        <div class="extra-card-desc">A simple step-by-step that gets buyers moving fast — the most-used extra in any digital product</div>
+      </div>
+      <div class="extra-card selected" id="extra-card-faq" onclick="toggleExtraCard(this,'extra-faq')">
+        <div class="extra-card-check">✓</div>
+        <div class="extra-card-icon">❓</div>
+        <div class="extra-card-title">FAQ document</div>
+        <div class="extra-card-desc">The questions buyers will have before and after they purchase, answered clearly</div>
+      </div>
+      <div class="extra-card" id="extra-card-template" onclick="toggleExtraCard(this,'extra-template')">
+        <div class="extra-card-check">✓</div>
+        <div class="extra-card-icon">📝</div>
+        <div class="extra-card-title">Fillable template or worksheet</div>
+        <div class="extra-card-desc">Something they can complete and keep — turns passive reading into active implementation</div>
+      </div>
+      <div class="extra-card" id="extra-card-resources" onclick="toggleExtraCard(this,'extra-resources')">
+        <div class="extra-card-check">✓</div>
+        <div class="extra-card-icon">🔗</div>
+        <div class="extra-card-title">Resource list</div>
+        <div class="extra-card-desc">Tools, links, and recommendations that support everything inside your product</div>
+      </div>
+      <div class="extra-card" id="extra-card-prompts" onclick="toggleExtraCard(this,'extra-prompts')">
+        <div class="extra-card-check">✓</div>
+        <div class="extra-card-icon">🤖</div>
+        <div class="extra-card-title">AI prompt pack</div>
+        <div class="extra-card-desc">Copy-paste prompts so buyers can go further with AI — a high-perceived-value add-on</div>
+      </div>
+    </div>
+    <!-- hidden inputs for generateExtras() to read -->
+    <input type="hidden" id="extra-quickstart" value="1">
+    <input type="hidden" id="extra-faq" value="1">
+    <input type="hidden" id="extra-template" value="0">
+    <input type="hidden" id="extra-resources" value="0">
+    <input type="hidden" id="extra-prompts" value="0">
+    <div class="btn-row" style="margin-top:24px;">
+      <button class="btn btn-primary" onclick="generateExtras()">Generate my selected extras →</button>
+      <button class="btn btn-ghost" onclick="skipExtras()">Skip extras</button>
+    </div>
+  </div>
+
+  <div id="extras-output" style="display:none">
+    <div style="border-top:2px solid var(--border); margin:24px 0 20px; padding-top:20px;">
+      <p style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:16px;">Your generated extras — click inside any to edit</p>
+      <div id="extrasCards"></div>
+    </div>
+    <div class="btn-row mt-16">
+      <button class="btn btn-primary" onclick="goTo('m2-preview')">Continue to product preview →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M2 PREVIEW ── -->
+<div class="screen" id="screen-m2-preview">
+  <div class="screen-header">
+    <div class="screen-tag">Module 2 — Complete</div>
+    <h1>Your product is built.</h1>
+    <p class="screen-sub">Here's everything you've created. Review each section. You can still edit anything.</p>
+  </div>
+
+  <div id="productPreview"></div>
+
+  <div class="btn-row mt-24">
+    <button class="btn btn-primary btn-lg" onclick="goTo('m3-design')">Let's launch this →</button>
+  </div>
+</div>
+
+<!-- ── SCREEN: M3 DESIGN ── -->
+<div class="screen" id="screen-m3-design">
+  <div class="screen-header">
+    <div class="screen-tag">Module 3 — Step 1</div>
+    <h1>Design guide</h1>
+    <p class="screen-sub">You don't need to be a designer. Here's exactly what to use and how to make your product look professional without spending hours on it.</p>
+  </div>
+
+  <div id="design-loading" class="loading" style="display:none">
+    <div class="spinner"></div> Creating your design brief...
+  </div>
+  <div id="design-error" class="alert alert-error" style="display:none"></div>
+  <div class="card" style="margin-bottom:16px;">
+    <h3 style="margin-bottom:12px;">The tool I recommend: Canva</h3>
+    <p style="font-size:14px; margin-bottom:8px;">Canva is free, browser-based, and built for people who aren't designers. It has templates for workbooks, guides, checklists, and presentations — most of what you'll need for a digital product is already there.</p>
+    <a class="btn btn-outline btn-sm" href="https://canva.com" target="_blank">Open Canva →</a>
+  </div>
+
+  <div id="design-tool-extras"></div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3 style="margin-bottom:12px;">Your brand colours</h3>
+    <p style="font-size:14px; margin-bottom:12px;">If you already have brand colours, add your hex codes below and I'll give you a short guide on where to use them. If you don't have brand colours yet, I can help you choose some.</p>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+      <div class="form-group" style="flex:1; min-width:140px; margin-bottom:0;">
+        <label>Primary colour</label>
+        <input type="text" id="brandColour1" placeholder="#ef1970" oninput="refreshClaudeDesignPrompt()" />
+        <div class="form-hint">Your main brand colour (e.g. for headings, buttons)</div>
+      </div>
+      <div class="form-group" style="flex:1; min-width:140px; margin-bottom:0;">
+        <label>Secondary colour</label>
+        <input type="text" id="brandColour2" placeholder="#225151" oninput="refreshClaudeDesignPrompt()" />
+        <div class="form-hint">A complementary colour</div>
+      </div>
+      <div class="form-group" style="flex:1; min-width:140px; margin-bottom:0;">
+        <label>Background / neutral</label>
+        <input type="text" id="brandColour3" placeholder="#fbf8f2" oninput="refreshClaudeDesignPrompt()" />
+        <div class="form-hint">Your background or light accent</div>
+      </div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="generateDesignGuide()">Get my design guide →</button>
+    <button class="btn btn-ghost btn-sm" id="colour-help-btn" onclick="suggestColourPalettes()">I don't have brand colours yet — help me choose</button>
+    <div id="colour-help-loading" style="display:none; align-items:center; gap:8px; margin-top:12px; font-size:13px; color:var(--text-soft);">
+      <div class="spinner" style="width:18px; height:18px; border-width:2px;"></div> Choosing palettes for your audience...
+    </div>
+    <div id="colour-palette-suggestions" style="display:none; margin-top:16px;"></div>
+  </div>
+
+  <div id="design-loading" class="loading" style="display:none">
+    <div class="spinner"></div> Creating your design guide...
+  </div>
+  <div id="design-error" class="alert alert-error" style="display:none"></div>
+
+  <div id="design-output" style="display:none">
+    <div id="design-colour-swatches" style="display:none"></div>
+    <div class="card">
+      <div id="designContent" style="font-size:14px; line-height:1.8;"></div>
+    </div>
+    <div class="btn-row mt-16">
+      <button class="btn btn-primary" onclick="goTo('m3-platform')">Next: Choose your platform →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M3 PLATFORM ── -->
+<div class="screen" id="screen-m3-platform">
+  <div class="screen-header">
+    <div class="screen-tag">Module 3 — Step 2</div>
+    <h1>Where will you sell this?</h1>
+  </div>
+
+  <div class="kartra-hero">
+    <h3>My recommendation: Kartra</h3>
+    <p>I've been using Kartra since 2014. I've tried most of the alternatives and watched hundreds of women piece together cheaper tools — then move to Kartra anyway once they outgrow them. Kartra does everything in one place: pages, funnels, email, checkouts, memberships, automations. No Zapier. No separate email platform. No monthly bill for 5 different tools. Build for the business you want to have.</p>
+    <div class="kartra-pricing-row">
+      <div class="kartra-plan recommended">
+        <div class="plan-name">⭐ Essentials — where I'd start</div>
+        <div class="plan-note">500 contacts · 1 product · all the core tools to get going</div>
+      </div>
+      <div class="kartra-plan">
+        <div class="plan-name">Starter — when you're ready to grow</div>
+        <div class="plan-note">2,500 contacts · unlimited products · 0% transaction fees</div>
+      </div>
+      <div class="kartra-plan">
+        <div class="plan-name">Growth — for scaling</div>
+        <div class="plan-note">12,500 contacts · affiliates · advanced automations</div>
+      </div>
+    </div>
+    <p style="margin-top:14px; font-size:13px; color:rgba(255,255,255,0.7);">Start on Essentials and get your first product live. When your list grows or you want to add more products, upgrading takes two minutes. Build for where you are now — grow into the rest. Check Kartra's site for current pricing and any active offers.</p>
+  </div>
+
+  <p class="affiliate-disclosure">Disclosure: the link below is my affiliate link. I earn a small commission if you sign up, at no extra cost to you. I only recommend tools I use myself and believe in completely.</p>
+
+  <div class="btn-row mt-16">
+    <a class="btn btn-primary" href="https://try.kartra.com/hupnk0k1znyi" target="_blank" onclick="selectPlatform('kartra')">Try Kartra free for 14 days →</a>
+    <button class="btn btn-ghost" onclick="showOtherPlatform()">I already have a platform</button>
+  </div>
+
+  <div id="other-platform-section" style="display:none;" class="card mt-16">
+    <h3>Which platform are you using?</h3>
+    <input type="text" id="otherPlatformName" placeholder="e.g. Stan Store, Gumroad, Teachable..." class="mt-8" />
+    <p class="form-hint mt-8">I'll tailor your setup guide to that platform.</p>
+    <button class="btn btn-secondary mt-16" onclick="confirmOtherPlatform()">Continue with this platform →</button>
+  </div>
+
+  <div id="platform-confirmed" style="display:none;">
+    <div class="btn-row mt-16">
+      <button class="btn btn-primary" onclick="markDone('m3-platform'); goTo('m3-emails')">Next: Write my welcome emails →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M3 EMAILS ── -->
+<div class="screen" id="screen-m3-emails">
+  <div class="screen-header">
+    <div class="screen-tag">Module 3 — Step 3</div>
+    <h1>Welcome emails</h1>
+    <p class="screen-sub">Two emails, written in your brand voice, formatted ready to paste straight into Kartra.</p>
+  </div>
+
+  <div id="emails-loading" class="loading" style="display:none">
+    <div class="spinner"></div> Writing your welcome emails...
+  </div>
+  <div id="emails-error" class="alert alert-error" style="display:none"></div>
+  <div id="emails-generate-btn">
+    <button class="btn btn-primary" onclick="generateEmails()">Write my welcome emails →</button>
+  </div>
+  <div id="emails-output" style="display:none">
+    <div class="alert alert-info mb-8" id="emails-paste-tip"></div>
+    <div class="ai-output-wrapper">
+      <div class="ai-output editable" id="emailsContent" contenteditable="true"></div>
+      <button class="copy-btn" onclick="copyContent('emailsContent')">Copy</button>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <p style="font-size:13px; font-weight:600; margin-bottom:8px;">Want AI to revise these?</p>
+      <textarea id="emails-feedback" rows="2" placeholder="e.g. Email 1 feels too formal. Or: Make both emails shorter. Or: The subject line isn't compelling enough." style="font-size:13px;"></textarea>
+      <button class="btn btn-sm btn-outline" style="margin-top:8px;" onclick="reviseEmails()">Revise with my feedback →</button>
+    </div>
+    <div class="btn-row mt-16">
+      <button class="btn btn-primary" onclick="goTo('m3-sales')">Next: Write my sales page →</button>
+      <button class="btn btn-ghost" onclick="generateEmails()">Start fresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M3 SALES ── -->
+<div class="screen" id="screen-m3-sales">
+  <div class="screen-header">
+    <div class="screen-tag">Module 3 — Step 4</div>
+    <h1>Sales page copy</h1>
+    <p class="screen-sub">Your complete sales page, written in your voice, in sections you can copy block by block into Kartra.</p>
+  </div>
+
+  <div id="sales-loading" class="loading" style="display:none">
+    <div class="spinner"></div> Writing your sales page...
+  </div>
+  <div id="sales-error" class="alert alert-error" style="display:none"></div>
+  <div id="sales-generate-btn">
+    <button class="btn btn-primary" onclick="generateSalesCopy()">Write my sales page →</button>
+  </div>
+  <div id="sales-output" style="display:none">
+    <div class="card card-pink" style="margin-bottom:12px; font-size:13px;">
+      <strong>Tip:</strong> Click anywhere inside the text below to edit it directly. The sales page copy is a starting point — make it sound completely like you before using it.
+    </div>
+    <div class="ai-output-wrapper">
+      <div class="ai-output editable" id="salesContent" contenteditable="true"></div>
+      <button class="copy-btn" onclick="copyContent('salesContent')">Copy</button>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <p style="font-size:13px; font-weight:600; margin-bottom:8px;">Want AI to revise any part of this?</p>
+      <textarea id="sales-feedback" rows="2" placeholder="e.g. The headline isn't strong enough. Or: Make the problem section shorter. Or: Add more about who this is NOT for." style="font-size:13px;"></textarea>
+      <button class="btn btn-sm btn-outline" style="margin-top:8px;" onclick="reviseSalesCopy()">Revise with my feedback →</button>
+    </div>
+    <div class="btn-row mt-16">
+      <button class="btn btn-primary" onclick="goTo('m3-launch')">Next: My launch plan →</button>
+      <button class="btn btn-ghost" onclick="generateSalesCopy()">Start fresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: M3 LAUNCH ── -->
+<div class="screen" id="screen-m3-launch">
+  <div class="screen-header">
+    <div class="screen-tag">Module 3 — Step 5</div>
+    <h1>Your 3-day launch plan</h1>
+    <p class="screen-sub">Personalised for your product and your audience. Day-by-day, post-by-post. No guesswork.</p>
+  </div>
+
+  <div id="launch-loading" class="loading" style="display:none">
+    <div class="spinner"></div> Building your launch plan...
+  </div>
+  <div id="launch-error" class="alert alert-error" style="display:none"></div>
+
+  <div id="launch-generate-btn">
+    <p style="font-size:13px; color:var(--text-soft); margin-bottom:16px;">Select every place you plan to show up during your launch. The plan will be written specifically for each one.</p>
+    <div class="platform-card-grid">
+      <div class="platform-card" id="plat-card-instagram" onclick="togglePlatformCard(this,'instagram')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">📸</div>
+        <div class="platform-card-name">Instagram</div>
+      </div>
+      <div class="platform-card" id="plat-card-facebook-personal" onclick="togglePlatformCard(this,'facebook-personal')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">👤</div>
+        <div class="platform-card-name">Facebook Personal</div>
+      </div>
+      <div class="platform-card" id="plat-card-facebook-group" onclick="togglePlatformCard(this,'facebook-group')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">👥</div>
+        <div class="platform-card-name">Facebook Group</div>
+      </div>
+      <div class="platform-card" id="plat-card-tiktok" onclick="togglePlatformCard(this,'tiktok')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">🎵</div>
+        <div class="platform-card-name">TikTok</div>
+      </div>
+      <div class="platform-card" id="plat-card-linkedin" onclick="togglePlatformCard(this,'linkedin')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">💼</div>
+        <div class="platform-card-name">LinkedIn</div>
+      </div>
+      <div class="platform-card" id="plat-card-x" onclick="togglePlatformCard(this,'x')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">🐦</div>
+        <div class="platform-card-name">X (Twitter)</div>
+      </div>
+      <div class="platform-card" id="plat-card-snapchat" onclick="togglePlatformCard(this,'snapchat')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">👻</div>
+        <div class="platform-card-name">Snapchat</div>
+      </div>
+      <div class="platform-card" id="plat-card-email" onclick="togglePlatformCard(this,'email')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">📧</div>
+        <div class="platform-card-name">Email List</div>
+      </div>
+      <div class="platform-card" id="plat-card-meta-ads" onclick="togglePlatformCard(this,'meta-ads')">
+        <div class="platform-card-check">✓</div>
+        <div class="platform-card-icon">📢</div>
+        <div class="platform-card-name">Meta/Facebook Ads</div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:24px;">
+      <button class="btn btn-primary" onclick="generateLaunchPlan()">Build my launch plan →</button>
+    </div>
+  </div>
+
+  <div id="launch-output" style="display:none">
+    <div id="launchPlatformCards"></div>
+    <div class="card" style="margin-top:8px;">
+      <p style="font-size:13px; font-weight:600; margin-bottom:8px;">Want AI to revise any part of this?</p>
+      <textarea id="launch-feedback" rows="2" placeholder="e.g. Make Day 1 less salesy. Or: Cut the email content shorter. Or: Add more story-led hooks." style="font-size:13px;"></textarea>
+      <button class="btn btn-sm btn-outline" style="margin-top:8px;" onclick="reviseLaunchPlan()">Revise with my feedback →</button>
+    </div>
+    <div class="btn-row mt-16">
+      <button class="btn btn-primary" onclick="goTo('download')">Take me to my downloads →</button>
+      <button class="btn btn-ghost" onclick="resetLaunchPlan()">Start over</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCREEN: DOWNLOAD ── -->
+<div class="screen" id="screen-download">
+  <div class="screen-header">
+    <div class="screen-tag">You did it.</div>
+    <h1>Your product is ready.</h1>
+  </div>
+
+  <div class="card card-pink" style="margin-bottom:24px; text-align:center; padding:28px 24px;">
+    <div style="font-size:32px; margin-bottom:12px;">🎉</div>
+    <p style="font-size:17px; font-weight:700; font-family:'Libre Baskerville',Georgia,serif; color:var(--teal); margin-bottom:14px; line-height:1.5;">You did it!! You just created a digital product that's ready to sell!!</p>
+    <p style="font-size:14px; line-height:1.8; color:var(--text); margin-bottom:14px;">This might sound cheesy, but I'm SO proud of you. Too many women make excuses for not chasing their dreams — but not you, not today.</p>
+    <p style="font-size:14px; line-height:1.8; color:var(--text); margin-bottom:14px;">I pray this has lit a fire in your belly to build a truly remarkable and profitable digital product business that serves you and your family in ways you can't even imagine right now.</p>
+    <p style="font-size:15px; font-weight:700; color:var(--pink);">Well done lovely. Now let's get it out into the world.</p>
+    <p style="font-size:13px; color:var(--text-soft); margin-top:16px;">Everything you've built is below. Copy each asset and use it today.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+      <div>
+        <h3 style="margin-bottom:4px;">Your product brief</h3>
+        <p style="font-size:13px; color:var(--text-soft);">A complete snapshot of everything you've built. Copy this into any AI tool (Claude, ChatGPT, etc.) to create more content for your product without starting from scratch.</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="copyProductBrief(this)">Copy brief</button>
+    </div>
+    <div id="productBriefContent" style="font-size:13px; line-height:1.7; white-space:pre-wrap; background:var(--bg); border-radius:8px; padding:14px; border:1px solid var(--border); max-height:300px; overflow-y:auto;"></div>
+  </div>
+
+  <div id="downloadAssets"></div>
+
+  <div class="card card-pink mt-24" style="text-align:center;">
+    <h3>Ready to take this further?</h3>
+    <p style="margin-top:8px; color:var(--text-soft);">The You Can Have It All Digital Business Academy walks you through building a complete, automated digital business — products, funnels, email marketing, and consistent income. All designed for life at home.</p>
+    <a class="btn btn-primary mt-16" href="https://www.haveitallacademy.com/" target="_blank">Learn about the Academy →</a>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+const CONFIG = {
+  model: 'claude-haiku-4-5-20251001',
+  maxTokens: 4000
+};
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let S = {
+  userName: '', audience: '', topics: '', transformation: '', brandVoice: '', currency: '£',
+  productIdeas: [], selectedIdeas: [], validationData: [],
+  chosenProduct: null, productFormat: '',
+  chosenName: '', chosenPrice: '',
+  buildPath: '',
+  outline: [],
+  sectionContent: {},
+  outlineBuiltFor: '',
+  extrasContent: '', designContent: '', listingContent: '',
+  emailsContent: '', salesContent: '', launchContent: '',
+  launchPlatforms: [],
+  platformChoice: '', otherPlatform: '',
+  currentScreen: 'welcome',
+  completedScreens: []
+};
+
+// Load saved state
+try {
+  const saved = localStorage.getItem('diad_v2');
+  if (saved) S = Object.assign(S, JSON.parse(saved));
+} catch(e) {}
+
+function save() {
+  try { localStorage.setItem('diad_v2', JSON.stringify(S)); } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+const SCREEN_ORDER = [
+  'welcome','business',
+  'm1-ideas','m1-validation','m1-winner','m1-naming','m1-confirm',
+  'fork','m2-outline','m2-content','m2-extras','m2-preview',
+  'm3-design','m3-platform','m3-emails','m3-sales','m3-launch',
+  'download'
+];
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  if (el) { el.classList.add('active'); window.scrollTo(0,0); }
+  S.currentScreen = id;
+  if (!S.completedScreens.includes(id)) {
+    // don't mark new screen as done until we leave it
+  }
+  updateSidebar();
+  save();
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+  // Auto-populate if returning
+  autoPopulate(id);
+}
+
+function autoPopulate(id) {
+  if (id === 'business') {
+    setVal('userName', S.userName);
+    setVal('audience', S.audience);
+    setVal('topics', S.topics);
+    setVal('transformation', S.transformation);
+    setVal('brandVoice', S.brandVoice);
+  }
+  if (id === 'm1-confirm') renderProductSummary();
+  if (id === 'fork') {
+    if (S.buildPath) selectPath(S.buildPath);
+  }
+  if (id === 'm2-content') renderContentScreen();
+  if (id === 'm2-preview') renderProductPreview();
+  if (id === 'download') renderDownloadAssets();
+  if (id === 'm3-platform') restorePlatformState();
+  if (id === 'm1-validation') validateIdeas();
+  if (id === 'm1-winner') renderWinnerChoices();
+  if (id === 'm2-outline') initOutlineScreen();
+  if (id === 'm3-design') { showDesignToolExtras(); if (S.designContent) showDesignOutput(); refreshClaudeDesignPrompt(); }
+  if (id === 'm3-emails' && S.emailsContent) showEmailsOutput();
+  if (id === 'm3-sales' && S.salesContent) showSalesOutput();
+  if (id === 'm3-launch') { restorePlatformCards(); if (S.launchContent) showLaunchOutput(); }
+  if (id === 'm2-extras' && S.extrasContent) showExtrasOutput();
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val) el.value = val;
+}
+
+function updateSidebar() {
+  SCREEN_ORDER.forEach(id => {
+    const navEl = document.getElementById('nav-' + id);
+    if (!navEl) return;
+    navEl.classList.remove('active','done');
+    if (id === S.currentScreen) navEl.classList.add('active');
+    else if (S.completedScreens.includes(id)) navEl.classList.add('done');
+  });
+  const done = S.completedScreens.length;
+  const total = SCREEN_ORDER.length - 1;
+  const pct = Math.round((done/total)*100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = done + ' of ' + total + ' steps complete';
+}
+
+function markDone(id) {
+  if (!S.completedScreens.includes(id)) S.completedScreens.push(id);
+  save(); updateSidebar();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLAUDE API
+// ═══════════════════════════════════════════════════════════════
+async function callClaude(prompt, system = '', maxTokensOverride = null) {
+  const res = await fetch('/.netlify/functions/claude', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: CONFIG.model,
+      max_tokens: maxTokensOverride || CONFIG.maxTokens,
+      system: system || `You are an expert digital product strategist specialising in low-ticket, high-transformation digital products that sell on autopilot. Your philosophy: the best products solve a specific, urgent, proven problem with maximum simplicity. A 3-page template that saves someone 10 hours beats a 100-module course every time. Products must have psychological names that trigger instant desire — the name alone should communicate the transformation, so specifically that someone instantly knows what the product does without guessing. You prioritise proven demand over novel ideas, speed of transformation over depth, and direct offers over complexity.
+
+CRITICAL WRITING RULES — these apply to every single word you write:
+1. NEVER use AI clichés or hollow phrases. Banned forever: "sound familiar", "you're not alone", "I see you", "dive deep", "game changer", "unlock", "leverage", "elevate", "it's time to", "are you tired of", "imagine a world where", "the truth is", "here's the thing", "let's be honest", "in today's world", "now more than ever", "at the end of the day", "take your business to the next level", "crush it", "skyrocket", "transform your life", or any phrase that sounds like it could appear in a generic online course ad.
+2. No em dashes. Use commas, full stops, or brackets instead.
+3. No short staccato sentences stacked one after another for false drama. Vary sentence length naturally.
+4. No hollow empathy openers that repeat back what the person just told you.
+5. Never make up data, reviews, testimonials, statistics, or results. If something needs a placeholder, label it clearly as a placeholder.
+6. Write like a real, knowledgeable person — warm, direct, specific, and honest. If you'd cringe saying it out loud to a friend, rewrite it.
+7. Keep all language beginner-friendly. No marketing jargon. If you use a term that needs explaining, explain it simply.`,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'Something went wrong. Please try again.');
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+function showLoading(id) { const el = document.getElementById(id); if(el) el.style.display='flex'; }
+function hideLoading(id) { const el = document.getElementById(id); if(el) el.style.display='none'; }
+function showEl(id) { const el = document.getElementById(id); if(el) el.style.display='block'; }
+function hideEl(id) { const el = document.getElementById(id); if(el) el.style.display='none'; }
+function setError(id, msg) { const el = document.getElementById(id); if(el) { el.textContent = msg; el.style.display = 'block'; } }
+function clearError(id) { const el = document.getElementById(id); if(el) el.style.display = 'none'; }
+function selectVoiceChip(btn, value) {
+  document.querySelectorAll('.voice-chip').forEach(c => c.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('brandVoice').value = value;
+}
+function applyCustomPrice(val) {
+  if (!val) return;
+  // Deselect any highlighted price card
+  document.querySelectorAll('.price-option').forEach(p => p.style.background = '');
+  document.getElementById('chosenPrice').value = S.currency + val;
+}
+
+function selectPriceOption(el, price) {
+  // Clear custom price input when a card is selected
+  const custom = document.getElementById('customPriceInput');
+  if (custom) custom.value = '';
+  document.querySelectorAll('.price-option').forEach(p => {
+    p.style.background = ''; p.style.borderColor = ''; p.style.color = '';
+  });
+  el.style.background = 'var(--pink)';
+  el.style.color = 'white';
+  el.style.borderColor = 'var(--pink)';
+  el.querySelectorAll('p').forEach(p => p.style.color = 'rgba(255,255,255,0.8)');
+  document.getElementById('chosenPrice').value = price;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUSINESS SETUP
+// ═══════════════════════════════════════════════════════════════
+function saveBusiness() {
+  const name = document.getElementById('userName').value.trim();
+  const audience = document.getElementById('audience').value.trim();
+  const topics = document.getElementById('topics').value.trim();
+  const transformation = document.getElementById('transformation').value.trim();
+  const voice = document.getElementById('brandVoice').value.trim();
+  const currency = document.getElementById('userCurrency').value;
+  if (!name || !audience || !topics || !transformation || !voice) {
+    alert('Please fill in all fields before continuing.');
+    return;
+  }
+  S.userName = name; S.audience = audience; S.topics = topics;
+  S.transformation = transformation; S.brandVoice = voice; S.currency = currency;
+  markDone('business'); save();
+  goTo('m1-ideas');
+}
+
+function bizContext() {
+  return `Business owner: ${S.userName}
+Their audience: ${S.audience}
+Topics they help with: ${S.topics}
+Transformation they provide: ${S.transformation}
+Brand voice: ${S.brandVoice}`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 1 — IDEAS
+// ═══════════════════════════════════════════════════════════════
+async function generateIdeas() {
+  hideEl('ideas-generate-btn');
+  hideEl('ideas-output');
+  clearError('ideas-error');
+  showLoading('ideas-loading');
+
+  try {
+    const prompt = `${bizContext()}
+
+You are a world-class digital product strategist. Generate 18 digital product ideas for this specific person — then score every single one ruthlessly before deciding which 12 to output.
+
+BANNED IDEA TYPES — never generate these, they score badly every time:
+- "Done-for-you" services dressed as products (e.g. done-for-you email sequences, custom templates, personalised plans)
+- Generic content calendars, business planners, or productivity systems not tied to a specific painful outcome
+- Anything that requires the buyer to have existing skills to get value from it
+- Courses, memberships, or anything with "programme", "system", or "blueprint" in the concept
+- Ideas so broad they could apply to any business owner (if it's not hyper-specific, it's not good enough)
+
+THE SPECIFICITY RULE — this is non-negotiable:
+Bad: "Social media caption templates"
+Bad: "Email nurture sequence swipe file"
+Good: "25 done-for-you Instagram captions for postpartum fitness coaches — plug in your offer name and post in 60 seconds"
+Good: "The First Sale Checklist: 12 steps to make your first digital product sale this week without a big audience"
+Every idea must name the exact person, the exact painful moment, and the exact result they walk away with.
+
+SCORING — before including any idea, score it on all 5 of these (be honest, be harsh):
+1. PROVEN DEMAND (8+ required): Are people already paying money or burning hours trying to fix this right now?
+2. IMPULSE BUY FACTOR (8+ required): Would someone see this and buy it immediately, no convincing needed?
+3. TRANSFORMATION CLARITY (8+ required): Is the before/after result so obvious that a stranger gets it in 3 seconds?
+4. VIRAL SHAREABILITY (8+ required): Would buyers screenshot it, send it to a friend, or post about it unprompted?
+5. SIMPLICITY TO BUILD (8+ required): Can this be built in 1–2 days and still feel impressively valuable?
+
+If ANY score is below 8, discard the idea and replace it. Only ideas that clear 8+ on all 5 dimensions make the final 12.
+
+THE STANDARD:
+Every idea must make the reader think "where has this been all my life?" and immediately want to share it. If it doesn't hit that bar, it doesn't make the list.
+
+Return ONLY a JSON array of exactly 12 ideas — the 12 that scored highest across all 5 dimensions:
+[
+  {
+    "name": "Working product title — specific, names the exact transformation",
+    "format": "template pack / swipe file / checklist / mini guide / toolkit / prompt pack / workbook / script pack",
+    "who": "Exactly who this is for — painful specificity, not a broad category",
+    "problem": "The urgent, specific, proven problem this solves right now",
+    "transformation": "From [specific painful state] to [specific desired result] in [realistic timeframe]",
+    "urgency": "Why someone buys this today — what is the cost of not having it?",
+    "viralHook": "The one thing that makes buyers share this without being asked",
+    "demandScore": 9,
+    "impulseScore": 8,
+    "clarityScore": 9,
+    "viralScore": 8,
+    "simplicityScore": 9,
+    "overallScore": 9,
+    "verdict": "One energising sentence about why this idea is strong and worth building",
+    "biggestRisk": "The one thing that could hold this back — and how to prevent it",
+    "standout": "The single thing that would make this an instant bestseller",
+    "priceSweetSpot": "${S.currency}X–${S.currency}X"
+  }
+]`;
+
+    const result = await callClaude(prompt, '', 8000);
+    const jsonMatch = result.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('Could not parse ideas. Please try again.');
+    let parsed = JSON.parse(jsonMatch[0]);
+    // Client-side safety filter — remove anything that slipped through under 8 overall
+    parsed = parsed.filter(idea => !idea.overallScore || idea.overallScore >= 8);
+    // If somehow fewer than 6 survive, show all rather than leaving the screen empty
+    if (parsed.length < 6) parsed = JSON.parse(jsonMatch[0]);
+    S.productIdeas = parsed;
+    S.selectedIdeas = [];
+    // Pre-populate validationData from embedded scores so validation screen needs no API call
+    S.validationData = [];
+    save();
+    renderIdeas();
+    hideLoading('ideas-loading');
+    showEl('ideas-output');
+  } catch(e) {
+    hideLoading('ideas-loading');
+    showEl('ideas-generate-btn');
+    setError('ideas-error', e.message);
+  }
+}
+
+function renderIdeas() {
+  const grid = document.getElementById('ideaGrid');
+  grid.innerHTML = S.productIdeas.map((idea, i) => `
+    <div class="idea-card ${S.selectedIdeas.includes(i) ? 'selected' : ''}" onclick="toggleIdea(${i})" id="idea-${i}">
+      <div class="idea-format">${idea.format}</div>
+      <h4>${idea.name}</h4>
+      <p style="font-size:12px; color:var(--text-soft); margin-bottom:6px;">${idea.transformation || idea.problem}</p>
+      ${idea.viralHook ? `<p style="font-size:11px; color:var(--pink); font-weight:600;">✦ ${idea.viralHook}</p>` : ''}
+    </div>
+  `).join('');
+  updateIdeaCount();
+}
+
+function toggleIdea(i) {
+  const idx = S.selectedIdeas.indexOf(i);
+  if (idx > -1) {
+    S.selectedIdeas.splice(idx, 1);
+  } else {
+    if (S.selectedIdeas.length >= 3) { alert('Select up to 3 ideas to compare.'); return; }
+    S.selectedIdeas.push(i);
+  }
+  document.getElementById('idea-' + i).classList.toggle('selected');
+  updateIdeaCount();
+  save();
+}
+
+function updateIdeaCount() {
+  const count = S.selectedIdeas.length;
+  const btn = document.getElementById('ideas-next-btn');
+  const info = document.getElementById('ideas-selected-count');
+  btn.disabled = count === 0;
+  if (count > 0) {
+    info.style.display = 'block';
+    info.textContent = count + ' idea' + (count !== 1 ? 's' : '') + ' selected. Select up to 3, then continue to validation.';
+  } else {
+    info.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 1 — VALIDATION
+// ═══════════════════════════════════════════════════════════════
+function validateIdeas() {
+  // Scores are already embedded in the ideas from the generation step — no API call needed
+  const selected = S.selectedIdeas.map(i => S.productIdeas[i]);
+  S.validationData = selected.map(idea => ({
+    name: idea.name,
+    demandScore: idea.demandScore || 8,
+    impulseScore: idea.impulseScore || 8,
+    clarityScore: idea.clarityScore || 8,
+    viralScore: idea.viralScore || 8,
+    simplicityScore: idea.simplicityScore || 8,
+    overallScore: idea.overallScore || 8,
+    verdict: idea.verdict || 'Strong idea with clear demand and transformation.',
+    biggestRisk: idea.biggestRisk || '',
+    standout: idea.standout || '',
+    priceSweetSpot: idea.priceSweetSpot || ''
+  }));
+  save();
+  renderValidation();
+  showEl('val-output');
+  hideEl('val-generate-btn');
+  markDone('m1-ideas');
+}
+
+function renderValidation() {
+  const container = document.getElementById('valCards');
+  container.innerHTML = S.validationData.map((v, i) => {
+    const scores = [
+      { label: 'Demand', val: v.demandScore },
+      { label: 'Impulse Buy', val: v.impulseScore },
+      { label: 'Clarity', val: v.clarityScore },
+      { label: 'Virality', val: v.viralScore },
+      { label: 'Simplicity', val: v.simplicityScore }
+    ];
+    const overall = v.overallScore || Math.round(scores.reduce((a,s) => a + (s.val||0), 0) / scores.length);
+    const overallColor = overall >= 8 ? 'var(--success)' : overall >= 6 ? 'var(--pink)' : 'var(--text-soft)';
+    return `
+    <div class="validation-card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <h3 style="margin:0;">${v.name}</h3>
+        <div style="text-align:center;">
+          <div style="font-size:28px; font-weight:700; color:${overallColor}; font-family:'Libre Baskerville',Georgia,serif;">${overall}<span style="font-size:14px; color:var(--text-soft);">/10</span></div>
+          <div style="font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-soft);">Overall</div>
+        </div>
+      </div>
+      <div class="val-scores">
+        ${scores.map(s => `
+        <div class="val-score">
+          <div class="score-num">${s.val || '–'}/10</div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:${((s.val||0)/10)*100}%"></div></div>
+          <div class="score-label">${s.label}</div>
+        </div>`).join('')}
+      </div>
+      <div style="margin-top:14px; padding:12px; background:var(--blush-pale); border-radius:8px;">
+        <p style="font-size:13px; font-weight:600; margin-bottom:4px;">Verdict</p>
+        <p style="font-size:13px; color:var(--text);">${v.verdict}</p>
+      </div>
+      ${v.biggestRisk ? `<p style="margin-top:10px; font-size:12px; color:var(--text-soft);"><strong>Biggest risk:</strong> ${v.biggestRisk}</p>` : ''}
+      ${v.standout ? `<p style="margin-top:6px; font-size:12px;"><strong>What would make this a bestseller:</strong> ${v.standout}</p>` : ''}
+      ${v.priceSweetSpot ? `<p style="margin-top:6px; font-size:12px; color:var(--pink); font-weight:600;">Sweet spot price: ${v.priceSweetSpot}</p>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 1 — WINNER
+// ═══════════════════════════════════════════════════════════════
+function renderWinnerChoices() {
+  const container = document.getElementById('winner-cards');
+  if (!container || !S.selectedIdeas.length) return;
+  const ideas = S.selectedIdeas.map(i => S.productIdeas[i]);
+  container.innerHTML = ideas.map((idea, i) => {
+    const isSelected = S.chosenProduct && S.chosenProduct.name === idea.name;
+    return `
+    <div class="idea-card ${isSelected ? 'selected' : ''}" onclick="selectWinner(${i})" id="winner-${i}" style="margin-bottom:12px;">
+      <div class="idea-format">${idea.format}</div>
+      <h4>${idea.name}</h4>
+      <p>${idea.problem}</p>
+    </div>`;
+  }).join('');
+  if (S.productFormat) setVal('productFormat', S.productFormat);
+}
+
+function selectWinner(i) {
+  const ideas = S.selectedIdeas.map(idx => S.productIdeas[idx]);
+  S.chosenProduct = ideas[i];
+  document.querySelectorAll('[id^="winner-"]').forEach(el => el.classList.remove('selected'));
+  document.getElementById('winner-' + i)?.classList.add('selected');
+  save();
+}
+
+async function helpChooseFormat() {
+  if (!S.chosenProduct) { alert('Please select a product idea first.'); return; }
+  hideEl('format-help-btn-wrap');
+  showEl('format-help-loading');
+  hideEl('format-help-output');
+  try {
+    const prompt = `${bizContext()}
+
+Product idea: "${S.chosenProduct.name}"
+Problem it solves: ${S.chosenProduct.problem}
+Transformation: ${S.chosenProduct.transformation || ''}
+
+Choose the single best format for this product from this EXACT list — copy the value exactly as written:
+- PDF guide
+- workbook (PDF)
+- checklist
+- template pack
+- swipe file
+- script pack
+- done-for-you email templates
+- prompt pack (copy-paste prompts)
+- planner
+- toolkit (mix of templates, checklists and guides)
+- workbook with video training (3–5 short videos)
+- PDF guide with video walkthrough
+- template pack with video tutorials
+- mini course (short videos with worksheets)
+- mini video course (3–5 short videos, no workbook)
+- audio training
+- recorded workshop (1 video, 60–90 mins)
+- interactive AI-powered tool (HTML)
+- email course (delivered by email over 5–7 days)
+- Notion template
+- Canva template pack
+- spreadsheet tool
+
+Return ONLY a JSON object. The "format" field must be copied exactly from the list above — no variations, no combinations, no new formats:
+{
+  "format": "exact value from the list above",
+  "why": "One sentence — the single most important reason this format works for this product and this specific audience",
+  "whatItLooksLike": "One sentence describing what the buyer actually receives and opens on day one",
+  "buildTime": "Honest estimate of how long this takes to create (e.g. 4–6 hours)"
+}`;
+    const result = await callClaude(prompt);
+    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const rec = JSON.parse(jsonMatch[0]);
+      // Auto-select the recommended format in the dropdown
+      const sel = document.getElementById('productFormat');
+      if (sel) {
+        for (let opt of sel.options) {
+          if (opt.value === rec.format) { sel.value = rec.format; break; }
+        }
+      }
+      document.getElementById('format-help-text').innerHTML = `
+        <div style="margin-bottom:14px;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-soft); margin-bottom:4px;">Recommended format</div>
+          <div style="font-size:20px; font-weight:700; color:var(--teal); font-family:'Libre Baskerville',Georgia,serif;">${rec.format}</div>
+        </div>
+        <div style="display:grid; gap:10px;">
+          <div style="padding:10px 12px; background:var(--blush-pale); border-radius:8px;">
+            <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--pink); margin-bottom:3px;">Why this works</div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">${rec.why}</div>
+          </div>
+          <div style="padding:10px 12px; background:var(--blush-pale); border-radius:8px;">
+            <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--pink); margin-bottom:3px;">What the buyer receives</div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">${rec.whatItLooksLike}</div>
+          </div>
+          <div style="padding:10px 12px; background:var(--blush-pale); border-radius:8px;">
+            <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--pink); margin-bottom:3px;">Time to build</div>
+            <div style="font-size:13px; color:var(--text); line-height:1.6;">${rec.buildTime}</div>
+          </div>
+        </div>`;
+    } else {
+      document.getElementById('format-help-text').textContent = result;
+    }
+    hideLoading('format-help-loading');
+    showEl('format-help-output');
+  } catch(e) {
+    hideLoading('format-help-loading');
+    showEl('format-help-btn-wrap');
+    alert('Could not generate recommendation. Please try again.');
+  }
+}
+
+function confirmWinner() {
+  if (!S.chosenProduct) { alert('Please select a product.'); return; }
+  const format = document.getElementById('productFormat').value;
+  if (!format) { alert('Please choose a format.'); return; }
+  S.productFormat = format;
+  markDone('m1-validation'); markDone('m1-winner');
+  save();
+  goTo('m1-naming');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 1 — NAMING
+// ═══════════════════════════════════════════════════════════════
+async function generateNaming() {
+  hideEl('naming-generate-btn');
+  clearError('naming-error');
+  showLoading('naming-loading');
+
+  try {
+    const prompt = `${bizContext()}
+
+Product to name: "${S.chosenProduct.name}"
+Problem it solves: ${S.chosenProduct.problem}
+Transformation: ${S.chosenProduct.transformation || 'not specified'}
+Format: ${S.productFormat}
+
+Generate 6 product names using PSYCHOLOGICAL NAMING principles. The name must:
+- Trigger an immediate "I need this" response WITHOUT the customer having to think
+- Communicate the transformation or end result clearly — no guessing what it does
+- Be simple, specific, and memorable
+- Feel like a no-brainer impulse purchase at a low-ticket price
+- NOT sound like a course or a generic guide
+
+THE GOLDEN RULE FOR NAMING: The name must be so specific that a stranger could read it and know EXACTLY what the product is and what it does — without any explanation. If it could apply to any product in any niche, it's too vague. If someone has to ask "but what is it actually?", it fails.
+
+NAME FORMULAS TO CONSIDER:
+- [Specific Problem] + [Format]: "The Instagram Bio Fix — a 10-minute rewrite template", "The Cold Inbox Script Pack"
+- [Specific Result] + [Timeframe]: "Your First Lead Magnet in a Day", "A Week of Content in 90 Minutes"
+- [Audience] + [Exact Outcome]: "The New Mum's First Digital Product Checklist", "The Military Spouse Business Starter Kit"
+- [Action] + [Specific Thing]: "Write Your Sales Page Today", "Build Your First Funnel This Week"
+- Descriptive and Literal: "The Lead Magnet Template Pack", "30 Done-For-You Email Subject Lines"
+
+WHAT TO AVOID: Vague words like "blueprint", "system", "method", "formula", "secrets", "roadmap", "playbook", "mastery", "ultimate", "complete guide" on their own — unless paired with something so specific the vagueness disappears. Never use a clever or frilly name that sacrifices clarity.
+
+For pricing: this is a low-ticket impulse buy. Price for "no-brainer" not "considered purchase." Think ${S.currency}15–${S.currency}47 sweet spot. You don't have to stick to prices ending in 7 — round numbers, fives, and nines can all work. The most important thing is that the price feels like an easy yes for the audience, not a considered decision. If you do suggest prices ending in 7, briefly explain why (e.g. psychological pricing research shows odd numbers ending in 7 or 9 feel lower than they are) — keep the explanation simple and beginner-friendly.
+
+Return ONLY JSON:
+{
+  "names": [
+    { "name": "Product Name", "formula": "Which naming formula used", "why": "Why this triggers instant desire" }
+  ],
+  "prices": [
+    { "price": "${S.currency}X", "justification": "Why this price feels like a no-brainer (plain, beginner-friendly language — no marketing jargon)" }
+  ],
+  "recommendedName": "The best name",
+  "recommendedPrice": "${S.currency}X",
+  "reasoning": "One sentence only — the single most important reason this name and price will convert for this audience"
+}
+
+Every name must pass the "say it out loud" test — if it sounds good said aloud, it works.`;
+
+    const result = await callClaude(prompt);
+    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Could not parse naming suggestions. Please try again.');
+    const data = JSON.parse(jsonMatch[0]);
+    renderNaming(data);
+    hideLoading('naming-loading');
+    showEl('naming-output');
+    setVal('chosenName', data.recommendedName);
+    setVal('chosenPrice', data.recommendedPrice);
+  } catch(e) {
+    hideLoading('naming-loading');
+    showEl('naming-generate-btn');
+    setError('naming-error', e.message);
+  }
+}
+
+function renderNaming(data) {
+  const container = document.getElementById('namingCards');
+  container.innerHTML = `
+    <div class="card">
+      <h3>Name options</h3>
+      <div style="margin-top:12px;">
+        ${data.names.map(n => `
+          <div style="padding:12px 0; border-bottom:1px solid var(--border); cursor:pointer;" onclick="document.getElementById('chosenName').value='${n.name.replace(/'/g,"\\'")}'; this.parentElement.querySelectorAll('div').forEach(d=>d.style.background=''); this.style.background='var(--blush-pale)';">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:3px;">
+              <strong style="font-size:14px;">${n.name}</strong>
+              ${n.formula ? `<span style="font-size:10px; background:var(--blush); color:var(--pink); padding:2px 7px; border-radius:10px; font-weight:600;">${n.formula}</span>` : ''}
+            </div>
+            <p style="font-size:12px; color:var(--text-soft);">${n.why}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="card mt-16">
+      <h3>Price options</h3>
+      <div style="margin-top:12px;">
+        ${data.prices.map(p => `
+          <div class="price-option" style="padding:10px 12px; border-bottom:1px solid var(--border); cursor:pointer; border-radius:6px; transition:all 0.15s;" onclick="selectPriceOption(this, '${p.price.replace(/'/g,"\\'")}')">
+            <strong style="font-size:14px;">${p.price}</strong>
+            <p style="font-size:12px; color:var(--text-soft); margin-top:3px;">${p.justification}</p>
+          </div>
+        `).join('')}
+        <div style="padding:12px 0 4px; border-top:1px solid var(--border); margin-top:4px;">
+          <p style="font-size:12px; color:var(--text-soft); margin-bottom:8px;">Or enter your own price:</p>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="font-size:14px; color:var(--text-soft);">${S.currency}</span>
+            <input type="number" min="1" placeholder="e.g. 29" id="customPriceInput"
+              style="width:100px; padding:7px 10px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit;"
+              oninput="applyCustomPrice(this.value)" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card card-pink mt-16" style="text-align:center; padding:20px 24px;">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--pink); margin-bottom:12px;">My recommendation</div>
+      <div style="font-size:22px; font-weight:700; font-family:'Libre Baskerville',Georgia,serif; color:var(--teal); margin-bottom:6px;">${data.recommendedName}</div>
+      <div style="font-size:18px; font-weight:700; color:var(--pink); margin-bottom:12px;">${data.recommendedPrice}</div>
+      <p style="font-size:13px; color:var(--text-soft); line-height:1.6; max-width:420px; margin:0 auto;">${data.reasoning}</p>
+    </div>`;
+}
+
+function confirmNaming() {
+  const name = document.getElementById('chosenName').value.trim();
+  const price = document.getElementById('chosenPrice').value.trim();
+  if (!name || !price) { alert('Please confirm both a name and a price.'); return; }
+  S.chosenName = name; S.chosenPrice = price;
+  markDone('m1-naming'); save();
+  renderProductSummary();
+  goTo('m1-confirm');
+}
+
+function confirmAndBuild() {
+  // If the product has changed since the outline was last built, wipe everything downstream
+  if (S.outlineBuiltFor && S.outlineBuiltFor !== S.chosenName) {
+    S.outline = [];
+    S.sectionContent = {};
+    S.extrasContent = '';
+    S.designContent = '';
+    S.emailsContent = '';
+    S.salesContent = '';
+    S.launchContent = '';
+    S.buildPath = '';
+    S.launchPlatforms = [];
+    S.completedScreens = S.completedScreens.filter(id =>
+      !['fork','m2-outline','m2-content','m2-extras','m2-preview',
+        'm3-design','m3-platform','m3-emails','m3-sales','m3-launch','download'].includes(id)
+    );
+    save();
+  }
+  goTo('fork');
+}
+
+function renderProductSummary() {
+  const container = document.getElementById('productSummaryCard');
+  if (!container || !S.chosenName) return;
+  container.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-soft); margin-bottom:4px;">Product name</div>
+        <div style="font-size:20px; font-weight:700; font-family:'Libre Baskerville',Georgia,serif; color:var(--pink);">${S.chosenName}</div>
+      </div>
+      <div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-soft); margin-bottom:4px;">Price</div>
+        <div style="font-size:20px; font-weight:700;">${S.chosenPrice}</div>
+      </div>
+      <div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-soft); margin-bottom:4px;">Format</div>
+        <div style="font-size:15px; font-weight:600;">${S.productFormat}</div>
+      </div>
+      <div>
+        <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-soft); margin-bottom:4px;">Audience</div>
+        <div style="font-size:13px; color:var(--text-soft);">${S.audience}</div>
+      </div>
+    </div>
+    <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border); font-size:14px; color:var(--text-soft);">
+      <strong>Problem solved:</strong> ${S.chosenProduct?.problem || ''}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FORK
+// ═══════════════════════════════════════════════════════════════
+function selectPath(path) {
+  // Clear any existing outline if switching paths — avoids AI outline bleeding into Path A
+  if (S.buildPath && S.buildPath !== path) {
+    S.outline = [];
+    S.sectionContent = {};
+  }
+  S.buildPath = path;
+  document.getElementById('pathA-card').classList.toggle('selected', path === 'A');
+  document.getElementById('pathB-card').classList.toggle('selected', path === 'B');
+  document.getElementById('fork-next-btn').disabled = false;
+  const info = document.getElementById('fork-selected-info');
+  info.style.display = 'block';
+  if (path === 'A') {
+    info.textContent = "Great choice. At each step, you'll share your knowledge and experience. AI will shape it into polished, professional content. Your product will be genuinely yours.";
+    document.getElementById('content-screen-title').textContent = 'Share your expertise';
+    document.getElementById('content-screen-sub').textContent = 'For each section of your outline, share what you know — your methods, your stories, your examples. AI will polish it into professional content.';
+    document.getElementById('content-screen-tag').textContent = 'Module 2 — Step 2 (You Lead)';
+  } else {
+    info.textContent = "AI will write a complete draft for your whole product. You'll then go through and personalise it — adding your stories, your examples, and your voice.";
+    document.getElementById('content-screen-title').textContent = 'Review and personalise your content';
+    document.getElementById('content-screen-sub').textContent = "AI has written a complete draft. Now go through each section and make it yours — add your stories, your examples, your personality. Don't skip this step.";
+    document.getElementById('content-screen-tag').textContent = 'Module 2 — Step 2 (AI Leads)';
+  }
+  markDone('m1-confirm'); save();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 2 — OUTLINE
+// ═══════════════════════════════════════════════════════════════
+function initOutlineScreen() {
+  const isPathA = S.buildPath === 'A';
+  document.getElementById('outline-screen-title').textContent = isPathA ? 'Build your outline' : 'Generate your outline';
+  document.getElementById('outline-screen-sub').textContent = isPathA
+    ? 'Map out your sections below — you know your content best. AI is here to help, not take over.'
+    : 'AI will draft a structure for your product based on your audience and topic. You can rename, reorder, add, or remove any section.';
+
+  if (isPathA) {
+    showEl('outline-pathA-start');
+    document.getElementById('outline-generate-btn').style.display = 'none';
+    hideEl('outline-output');
+    if (S.outline.length > 0) {
+      renderOutline();
+    } else {
+      // Start with 3 blank sections to prompt the user
+      S.outline = [
+        { title: 'Introduction', description: 'What this product covers and how to use it', type: 'intro' },
+        { title: 'Section 2', description: 'Click to rename', type: 'main content' },
+        { title: 'Action steps', description: 'What they do next', type: 'action step' }
+      ];
+      S.outlineBuiltFor = S.chosenName;
+      save();
+      renderOutline();
+    }
+  } else {
+    hideEl('outline-pathA-start');
+    if (S.outline.length > 0) {
+      hideEl('outline-generate-btn');
+      renderOutline();
+      showEl('outline-output');
+    } else {
+      showEl('outline-generate-btn');
+      hideEl('outline-output');
+    }
+  }
+}
+
+async function showAISuggestions() {
+  showEl('ai-suggestions-area');
+  showLoading('ai-suggestions-loading');
+  hideEl('ai-suggestions-output');
+  try {
+    const prompt = `${bizContext()}
+Product: "${S.chosenName}" — ${S.productFormat}
+Problem it solves: ${S.chosenProduct?.problem}
+
+The creator is building their own outline. Suggest 8 possible section ideas they could include. These are suggestions only — not a prescribed structure.
+
+Return ONLY a JSON array:
+[{"title":"Section title","description":"One sentence on what this covers"}]
+
+Keep sections lean and practical. Think speed of transformation, not comprehensiveness.`;
+    const result = await callClaude(prompt);
+    const match = result.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('Could not get suggestions.');
+    const suggestions = JSON.parse(match[0]);
+    hideLoading('ai-suggestions-loading');
+    const list = document.getElementById('ai-suggestions-list');
+    list.innerHTML = suggestions.map((s,i) => `
+      <div style="padding:8px 10px; border-radius:6px; cursor:pointer; border:1.5px solid var(--border); margin-bottom:6px; font-size:13px; transition:all 0.15s;"
+        onclick="addSuggestionToOutline(${i})" id="sugg-${i}">
+        <strong>${s.title}</strong>
+        <span style="color:var(--text-soft); margin-left:6px;">— ${s.description}</span>
+      </div>`).join('');
+    list.dataset.suggestions = JSON.stringify(suggestions);
+    showEl('ai-suggestions-output');
+  } catch(e) {
+    hideLoading('ai-suggestions-loading');
+    alert('Could not get suggestions: ' + e.message);
+  }
+}
+
+function addSuggestionToOutline(i) {
+  const list = document.getElementById('ai-suggestions-list');
+  const suggestions = JSON.parse(list.dataset.suggestions || '[]');
+  const s = suggestions[i];
+  if (!s) return;
+  S.outline.push({ title: s.title, description: s.description, type: 'main content' });
+  save();
+  renderOutline();
+  document.getElementById('sugg-' + i).style.opacity = '0.4';
+  document.getElementById('sugg-' + i).style.pointerEvents = 'none';
+  showEl('outline-pathA-feedback-card');
+}
+
+async function getAIOutlineFeedback() {
+  if (S.outline.length < 2) { alert('Add at least 2 sections first.'); return; }
+  const feedbackEl = document.getElementById('outline-ai-feedback');
+  feedbackEl.style.display = 'block';
+  feedbackEl.innerHTML = '<em style="color:var(--text-soft); font-size:13px;">Reviewing your outline...</em>';
+  try {
+    const outlineList = S.outline.map((s,i) => `${i+1}. ${s.title}: ${s.description}`).join('\n');
+    const prompt = `${bizContext()}
+Product: "${S.chosenName}" — ${S.productFormat}
+Transformation: ${S.chosenProduct?.transformation || ''}
+
+The creator has built this outline:
+${outlineList}
+
+Your job is to identify specific, actionable improvements — not to write a review essay. Focus only on what is genuinely missing or genuinely wrong. If the outline is solid, say so and keep suggestions minimal.
+
+Return ONLY a JSON object:
+{
+  "strength": "One short sentence on what is genuinely working well — be specific, not generic",
+  "suggestions": [
+    {
+      "issue": "Short label for the problem (e.g. 'Missing quick-win opener')",
+      "fix": "One clear sentence explaining the specific change to make",
+      "action": "add" or "note",
+      "sectionTitle": "If action is 'add' — the title of the new section to add",
+      "sectionDescription": "If action is 'add' — one sentence describing what it covers",
+      "sectionType": "introduction / main content / action step / template / summary"
+    }
+  ]
+}
+
+Rules:
+- Maximum 3 suggestions. If fewer are genuinely needed, return fewer.
+- Only suggest adding a section if something truly critical is missing for the buyer's transformation.
+- "action": "add" means a new section can be added to the outline with one click.
+- "action": "note" means it's a tweak the user should consider themselves (rename, reorder, etc).
+- No padding. No praise beyond the one strength sentence. No AI clichés.`;
+    const result = await callClaude(prompt);
+    const jsonMatch = result.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Could not parse feedback.');
+    const fb = JSON.parse(jsonMatch[0]);
+    // Store suggestions for apply buttons
+    window._outlineSuggestions = fb.suggestions || [];
+    const suggestionsHtml = (fb.suggestions || []).map((s, i) => `
+      <div style="padding:10px 12px; border:1.5px solid var(--border); border-radius:8px; margin-top:8px; background:var(--white);">
+        <div style="font-size:12px; font-weight:700; color:var(--pink); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">${s.issue}</div>
+        <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:8px;">${s.fix}</div>
+        ${s.action === 'add' ? `<button class="btn btn-sm btn-outline" onclick="applyOutlineSuggestion(${i})" id="sugg-apply-${i}">+ Add this section →</button>` : `<div style="font-size:11px; color:var(--text-soft); font-style:italic;">Consider adjusting this yourself in the outline above.</div>`}
+      </div>`).join('');
+    feedbackEl.innerHTML = `
+      <div style="font-size:13px; font-weight:600; color:var(--teal); margin-bottom:10px;">✓ ${fb.strength}</div>
+      ${fb.suggestions && fb.suggestions.length > 0 ? `<div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-soft); margin-bottom:4px;">Suggestions</div>${suggestionsHtml}` : '<div style="font-size:13px; color:var(--text-soft);">No major gaps — your outline is in good shape.</div>'}`;
+  } catch(e) {
+    feedbackEl.innerHTML = '<span style="color:var(--text-soft); font-size:13px;">Could not get feedback. Please try again.</span>';
+  }
+}
+
+function applyOutlineSuggestion(i) {
+  const s = (window._outlineSuggestions || [])[i];
+  if (!s || s.action !== 'add') return;
+  S.outline.push({ title: s.sectionTitle, description: s.sectionDescription, type: s.sectionType || 'main content' });
+  save();
+  renderOutline();
+  // Mark button as applied
+  const btn = document.getElementById('sugg-apply-' + i);
+  if (btn) { btn.textContent = '✓ Added'; btn.disabled = true; btn.style.opacity = '0.5'; }
+}
+
+async function generateOutline() {
+  hideEl('outline-generate-btn');
+  hideEl('outline-output');
+  clearError('outline-error');
+  showLoading('outline-loading');
+
+  try {
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}"
+Format: ${S.productFormat}
+Problem solved: ${S.chosenProduct?.problem}
+Transformation: ${S.chosenProduct?.transformation || ''}
+Price: ${S.chosenPrice}
+
+Create a clear, logical outline for this digital product. Follow this PHILOSOPHY:
+- SIMPLE OVER COMPLEX. The value is in the speed and ease of transformation, not the volume of content.
+- Most buyers have limited time. Design for someone who wants to get the result as quickly as possible.
+- Aim for 4–6 focused sections. Only go beyond 6 if the format genuinely requires it (e.g. a multi-module mini course).
+- Every section must earn its place. If it doesn't directly move the buyer closer to the transformation, cut it.
+- Think "done in an afternoon" not "comprehensive guide to everything".
+
+Return ONLY a JSON array of sections:
+[
+  {
+    "title": "Section title",
+    "description": "What this covers and why it matters — 1 sentence",
+    "type": "introduction / main content / action step / template / summary"
+  }
+]
+
+Start with a quick-win intro. End with a clear action step. Maximum 7 sections unless the format truly demands more.`;
+
+    const result = await callClaude(prompt);
+    const jsonMatch = result.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('Could not parse outline. Please try again.');
+    S.outline = JSON.parse(jsonMatch[0]);
+    S.outlineBuiltFor = S.chosenName;
+    save();
+    renderOutline();
+    hideLoading('outline-loading');
+    showEl('outline-output');
+    markDone('fork');
+  } catch(e) {
+    hideLoading('outline-loading');
+    showEl('outline-generate-btn');
+    setError('outline-error', e.message);
+  }
+}
+
+function renderOutline() {
+  // Show feedback card for Path A once sections exist
+  if (S.buildPath === 'A' && S.outline.length > 1) {
+    const fc = document.getElementById('outline-pathA-feedback-card');
+    if (fc) fc.style.display = 'block';
+  }
+  const containerId = S.buildPath === 'B' ? 'outlineSectionsB' : 'outlineSections';
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = S.outline.map((sec, i) => `
+    <div class="outline-section" id="outline-sec-${i}" draggable="true"
+      ondragstart="outlineDragStart(event,${i})" ondragover="outlineDragOver(event,${i})"
+      ondrop="outlineDrop(event,${i})" ondragleave="outlineDragLeave(event,${i})" ondragend="outlineDragEnd()">
+      <div class="drag-handle" title="Drag to reorder">≡</div>
+      <div class="outline-section-num">${i+1}</div>
+      <div class="outline-section-content">
+        <input type="text" value="${sec.title.replace(/"/g,'&quot;')}" onchange="S.outline[${i}].title=this.value; save();" title="Click to rename this section" />
+        <div class="outline-edit-hint">Editing — press Tab or click away to save</div>
+        <p style="font-size:12px; color:var(--text-soft); margin-top:4px;">${sec.description}</p>
+      </div>
+      <button onclick="removeSection(${i})" title="Remove this section" style="background:none;border:none;color:var(--text-soft);cursor:pointer;font-size:18px;padding:0 4px;flex-shrink:0;">✕</button>
+    </div>`).join('');
+}
+
+let _dragSrc = null;
+function outlineDragStart(e, i) { _dragSrc = i; e.currentTarget.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
+function outlineDragOver(e, i) { e.preventDefault(); if(i !== _dragSrc) e.currentTarget.classList.add('drag-over'); }
+function outlineDragLeave(e, i) { e.currentTarget.classList.remove('drag-over'); }
+function outlineDrop(e, i) {
+  e.preventDefault();
+  if (_dragSrc === null || _dragSrc === i) return;
+  const moved = S.outline.splice(_dragSrc, 1)[0];
+  S.outline.splice(i, 0, moved);
+  save(); renderOutline();
+}
+function outlineDragEnd() { document.querySelectorAll('.outline-section').forEach(el => { el.classList.remove('dragging','drag-over'); }); _dragSrc = null; }
+
+function removeSection(i) {
+  if (!confirm('Remove this section?')) return;
+  S.outline.splice(i, 1);
+  save(); renderOutline();
+}
+
+function addOutlineSection() {
+  S.outline.push({ title: 'New section', description: 'Describe what this covers', type: 'main content' });
+  save(); renderOutline();
+}
+
+async function regenerateOutlineWithFeedback() {
+  const feedback = document.getElementById('outlineFeedback').value.trim();
+  if (!feedback) { alert('Please type your feedback first.'); return; }
+  hideEl('outline-output');
+  showLoading('outline-loading');
+  try {
+    const currentOutline = S.outline.map((s,i) => `${i+1}. ${s.title}: ${s.description}`).join('\n');
+    const prompt = `${bizContext()}
+Product: "${S.chosenName}" — ${S.productFormat}
+
+Current outline:
+${currentOutline}
+
+User feedback: ${feedback}
+
+Revise the outline based on this feedback. Keep what works, change what they've asked for.
+IMPORTANT: Keep the product simple and digestible. Lean heavily towards fewer sections and faster consumption. Most digital products work best with 4–7 focused sections. Never overcomplicate.
+Return ONLY a JSON array:
+[{"title":"Section title","description":"1 sentence on what this covers","type":"intro/main content/action step/bonus"}]`;
+    const result = await callClaude(prompt);
+    const match = result.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('Could not parse outline. Try again.');
+    S.outline = JSON.parse(match[0]);
+    save();
+    renderOutline();
+    hideLoading('outline-loading');
+    showEl('outline-output');
+    document.getElementById('outlineFeedback').value = '';
+  } catch(e) {
+    hideLoading('outline-loading');
+    showEl('outline-output');
+    alert('Could not revise outline: ' + e.message);
+  }
+}
+
+function confirmOutline() {
+  if (S.outline.length < 3) { alert('Your outline needs at least 3 sections.'); return; }
+  // Reset section content if outline changed
+  S.sectionContent = {};
+  save();
+  markDone('m2-outline');
+  goTo('m2-content');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 2 — CONTENT
+// ═══════════════════════════════════════════════════════════════
+let currentSectionIndex = 0;
+
+function renderContentScreen() {
+  if (!S.outline.length) return;
+  // Clamp index to valid range — prevents stale index from a previous product crashing the screen
+  if (currentSectionIndex >= S.outline.length) currentSectionIndex = 0;
+
+  // Build nav
+  const nav = document.getElementById('sectionNav');
+  nav.innerHTML = S.outline.map((sec, i) => `
+    <button class="section-nav-btn ${i === currentSectionIndex ? 'active' : ''} ${S.sectionContent[i] ? 'done' : ''}"
+      onclick="switchSection(${i})">${i+1}. ${sec.title.substring(0,20)}${sec.title.length>20?'...':''}</button>
+  `).join('');
+
+  renderCurrentSection();
+}
+
+function switchSection(i) {
+  // Save current before switching
+  saveCurrentSection();
+  currentSectionIndex = i;
+  renderContentScreen();
+}
+
+function saveCurrentSection() {
+  const area = document.getElementById('section-content-area-text');
+  if (area) {
+    S.sectionContent[currentSectionIndex] = area.innerText || area.textContent;
+    save();
+  }
+}
+
+function renderCurrentSection() {
+  const section = S.outline[currentSectionIndex];
+  const isPathA = S.buildPath === 'A';
+  const existing = S.sectionContent[currentSectionIndex] || '';
+  const total = S.outline.length;
+  const isLast = currentSectionIndex === total - 1;
+  const allDone = S.outline.every((_, i) => S.sectionContent[i]);
+
+  const area = document.getElementById('content-section-area');
+  if (!area) return;
+
+  area.innerHTML = `
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <div class="outline-section-num">${currentSectionIndex+1}</div>
+        <div>
+          <h2 style="font-size:18px;">${section.title}</h2>
+          <p style="font-size:13px; color:var(--text-soft);">${section.description}</p>
+        </div>
+      </div>
+
+      ${isPathA ? `
+        <div class="form-group">
+          <label>Your knowledge, experience, and ideas for this section</label>
+          <textarea id="section-input" rows="6" placeholder="Share what you know about "${section.title}". Don't worry about it being perfect — just brain-dump everything you know. Your methods, your stories, examples from your clients, your own experience. Even rough notes are fine. AI will shape it into polished content."></textarea>
+          <p class="form-hint">The more you share, the more genuinely yours the final content will be.</p>
+        </div>
+        <div id="sec-gen-btn-${currentSectionIndex}">
+          <button class="btn btn-primary" onclick="generateSectionContent(${currentSectionIndex})">
+            AI, shape this into polished content →
+          </button>
+        </div>
+      ` : `
+        <div id="sec-gen-btn-${currentSectionIndex}">
+          <button class="btn btn-primary" onclick="generateSectionContentAI(${currentSectionIndex})">
+            Generate content for this section →
+          </button>
+        </div>
+      `}
+
+      <div id="sec-loading-${currentSectionIndex}" class="loading" style="display:none;">
+        <div class="spinner"></div> Writing section ${currentSectionIndex+1}...
+      </div>
+      <div id="sec-error-${currentSectionIndex}" class="alert alert-error" style="display:none;"></div>
+
+      ${existing ? `
+        <div style="margin-top:16px;">
+          <label>Your content ${S.sectionContent[currentSectionIndex] ? '<span class="section-complete-badge">✓ Written</span>' : ''} <span style="font-size:11px; color:var(--text-soft); font-weight:400;">— click inside to edit directly</span></label>
+          <div class="ai-output-wrapper">
+            <div class="ai-output editable" id="section-content-area-text" contenteditable="true">${existing}</div>
+            <button class="copy-btn" onclick="copyContent('section-content-area-text')">Copy</button>
+          </div>
+          <div style="margin-top:12px; padding:14px; background:var(--cream); border-radius:8px;">
+            <p style="font-size:12px; font-weight:600; margin-bottom:6px; color:var(--text);">Want AI to revise this section?</p>
+            <textarea id="section-feedback-${currentSectionIndex}" rows="2" placeholder="e.g. Make this shorter and more practical. Or: Add a real example. Or: This is too complex — simplify it." style="font-size:12px;"></textarea>
+            <button class="btn btn-sm btn-outline" style="margin-top:6px;" onclick="reviseSectionContent(${currentSectionIndex})">Revise with my feedback →</button>
+          </div>
+        </div>
+      ` : `
+        <div id="section-output-area-${currentSectionIndex}" style="display:none; margin-top:16px;">
+          <label>Your content <span style="font-size:11px; color:var(--text-soft); font-weight:400;">— click inside to edit directly</span></label>
+          <div class="ai-output-wrapper">
+            <div class="ai-output editable" id="section-content-area-text" contenteditable="true"></div>
+            <button class="copy-btn" onclick="copyContent('section-content-area-text')">Copy</button>
+          </div>
+          <div style="margin-top:12px; padding:14px; background:var(--cream); border-radius:8px; display:none;" id="section-feedback-wrap-${currentSectionIndex}">
+            <p style="font-size:12px; font-weight:600; margin-bottom:6px; color:var(--text);">Want AI to revise this section?</p>
+            <textarea id="section-feedback-${currentSectionIndex}" rows="2" placeholder="e.g. Make this shorter and more practical. Or: Add a real example. Or: This is too complex — simplify it." style="font-size:12px;"></textarea>
+            <button class="btn btn-sm btn-outline" style="margin-top:6px;" onclick="reviseSectionContent(${currentSectionIndex})">Revise with my feedback →</button>
+          </div>
+        </div>
+      `}
+
+      <div class="btn-row" style="margin-top:20px;">
+        ${currentSectionIndex > 0 ? `<button class="btn btn-ghost" onclick="switchSection(${currentSectionIndex-1})">← Previous</button>` : ''}
+        ${!isLast ? `<button class="btn btn-secondary" onclick="saveAndNext()">Save and next section →</button>` : ''}
+        ${allDone ? `<button class="btn btn-primary" onclick="allSectionsDone()">All sections done — continue →</button>` : ''}
+      </div>
+    </div>`;
+}
+
+async function generateSectionContent(i) {
+  const section = S.outline[i];
+  if (!section) { alert('Section not found. Please go back to the outline and try again.'); return; }
+  const inputEl = document.getElementById('section-input');
+  const userInput = inputEl ? inputEl.value.trim() : '';
+  if (!userInput && S.buildPath === 'A') {
+    alert('Please share your knowledge and ideas for this section first. Even rough notes are perfect.');
+    return;
+  }
+
+  hideEl(`sec-gen-btn-${i}`);
+  showLoading(`sec-loading-${i}`);
+  clearError(`sec-error-${i}`);
+
+  try {
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}" — ${S.productFormat} — ${S.chosenPrice}
+Section: "${section.title}"
+Section purpose: ${section.description}
+
+Here is what the creator shared about this section — their knowledge, experience, methods, and ideas:
+"""
+${userInput}
+"""
+
+Transform their input into polished, professional content for this section.
+CONTENT RULES:
+- Keep their voice and ideas — don't replace them, enhance them
+- Make it clear, actionable, and as short as it can be while still being valuable. Cut anything that doesn't move the reader closer to the transformation.
+- Include their examples and stories where they shared them
+- Write in a ${S.brandVoice} tone
+- Structure it with clear flow — use short paragraphs, not walls of text
+- Length: lean. Think "quick to consume and easy to act on", not "comprehensive". A buyer with limited time should be able to read each section in 3–5 minutes.
+- Write directly to the reader as "you"
+- No AI clichés. No em dashes. No hollow phrases. Write like a real human who genuinely knows this topic.
+
+Write only the section content. No meta commentary.`;
+
+    const result = await callClaude(prompt, `You are helping write content for a digital product. Write in a ${S.brandVoice} voice. Be practical, warm, and specific.`);
+    S.sectionContent[i] = result;
+    save();
+
+    hideLoading(`sec-loading-${i}`);
+    renderContentScreen(); // Re-render to show the content
+  } catch(e) {
+    hideLoading(`sec-loading-${i}`);
+    showEl(`sec-gen-btn-${i}`);
+    setError(`sec-error-${i}`, e.message);
+  }
+}
+
+async function generateSectionContentAI(i) {
+  const section = S.outline[i];
+  if (!section) { alert('Section not found. Please go back to the outline and try again.'); return; }
+  hideEl(`sec-gen-btn-${i}`);
+  showLoading(`sec-loading-${i}`);
+  clearError(`sec-error-${i}`);
+
+  try {
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}" — ${S.productFormat} — ${S.chosenPrice}
+Section: "${section.title}"
+Section purpose: ${section.description}
+
+Write complete, valuable content for this section of the digital product.
+CONTENT RULES:
+- Write directly to the reader as "you"
+- Tone: ${S.brandVoice}
+- Be specific, practical, and actionable
+- Include examples relevant to: ${S.audience}
+- Length: lean. Think "quick to consume and easy to act on". A buyer with limited time should be able to read this in 3–5 minutes. Short paragraphs, clear flow, no padding.
+- Leave clear placeholders like [YOUR STORY HERE] or [YOUR EXAMPLE HERE] where personal experience would strengthen the content — do NOT make up stories or examples
+- No AI clichés. No em dashes. No hollow phrases. Write like a real human expert.
+
+Write only the section content. No meta commentary.`;
+
+    const result = await callClaude(prompt);
+    S.sectionContent[i] = result;
+    save();
+    hideLoading(`sec-loading-${i}`);
+    renderContentScreen();
+  } catch(e) {
+    hideLoading(`sec-loading-${i}`);
+    showEl(`sec-gen-btn-${i}`);
+    setError(`sec-error-${i}`, e.message);
+  }
+}
+
+async function reviseSectionContent(i) {
+  const feedback = (document.getElementById(`section-feedback-${i}`) || {}).value?.trim();
+  if (!feedback) { alert('Please type your feedback first.'); return; }
+  const section = S.outline[i];
+  const existing = S.sectionContent[i] || '';
+  showLoading(`sec-loading-${i}`);
+  try {
+    const prompt = `${bizContext()}
+Product: "${S.chosenName}" — ${S.productFormat}
+Section: "${section.title}"
+
+Current content:
+"""
+${existing}
+"""
+
+User feedback: ${feedback}
+
+Revise this section based on the feedback. Keep what's working, change what they've asked for.
+RULES: Keep it lean and easy to consume. No AI clichés. No em dashes. No made-up examples. Write like a real human expert. Direct to reader as "you".
+
+Return only the revised section content. No commentary.`;
+    const result = await callClaude(prompt);
+    S.sectionContent[i] = result;
+    save();
+    hideLoading(`sec-loading-${i}`);
+    renderContentScreen();
+  } catch(e) {
+    hideLoading(`sec-loading-${i}`);
+    alert('Could not revise: ' + e.message);
+  }
+}
+
+function saveAndNext() {
+  saveCurrentSection();
+  if (currentSectionIndex < S.outline.length - 1) {
+    currentSectionIndex++;
+    renderContentScreen();
+    window.scrollTo(0,0);
+  }
+}
+
+function allSectionsDone() {
+  saveCurrentSection();
+  markDone('m2-content');
+  save();
+  goTo('m2-extras');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 2 — EXTRAS
+// ═══════════════════════════════════════════════════════════════
+function toggleExtraCard(cardEl, inputId) {
+  cardEl.classList.toggle('selected');
+  const inp = document.getElementById(inputId);
+  if (inp) inp.value = cardEl.classList.contains('selected') ? '1' : '0';
+}
+
+async function generateExtras() {
+  const selected = [];
+  if (document.getElementById('extra-quickstart')?.value === '1') selected.push('Quick-start checklist (step-by-step to get them moving fast — keep it to 10 steps max)');
+  if (document.getElementById('extra-faq')?.value === '1') selected.push('FAQ document (5–7 real questions buyers will have, with clear honest answers)');
+  if (document.getElementById('extra-template')?.value === '1') selected.push('Fillable template or worksheet they can complete and keep (with clear prompts/fields)');
+  if (document.getElementById('extra-resources')?.value === '1') selected.push('Resource list (specific tools, links, and recommendations that genuinely help — no filler)');
+  if (document.getElementById('extra-prompts')?.value === '1') selected.push('AI prompt pack (5–7 copy-paste prompts that help them implement the product faster)');
+
+  if (selected.length === 0) { skipExtras(); return; }
+
+  hideEl('extras-generate-btn');
+  clearError('extras-error');
+  showLoading('extras-loading');
+
+  try {
+    const contentSummary = S.outline.map((sec, i) =>
+      `${sec.title}: ${(S.sectionContent[i] || '').substring(0, 150)}...`
+    ).join('\n');
+
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}" — ${S.productFormat}
+Content overview:
+${contentSummary}
+
+Create the following extras for this product. Write the actual usable content in full — not a description of what it should contain.
+
+Extras to create:
+${selected.map((s,i) => `${i+1}. ${s}`).join('\n')}
+
+RULES:
+- Each extra must be immediately usable as-is
+- Keep everything lean and practical — no padding or filler
+- Write clearly with good formatting (numbered lists, clear headers, etc.)
+- Do NOT make up statistics, data, or fake testimonials
+- Label each extra clearly with its name before starting it
+- Separate extras with: ========== EXTRA [name] ==========`;
+
+    const result = await callClaude(prompt);
+    S.extrasContent = result;
+    save();
+    showExtrasOutput();
+    hideLoading('extras-loading');
+  } catch(e) {
+    hideLoading('extras-loading');
+    showEl('extras-generate-btn');
+    setError('extras-error', e.message);
+  }
+}
+
+function parseExtrasContent(text) {
+  const blocks = [];
+
+  // Try pattern 1: ========== EXTRA [name] ==========
+  const re1 = /={5,}[^=\n]*EXTRA[^=\n]*?([A-Za-z][^\n=]{2,}?)\s*={5,}([\s\S]*?)(?=={5,}|$)/gi;
+  let match;
+  while ((match = re1.exec(text)) !== null) {
+    const body = match[2].trim();
+    if (body) blocks.push({ title: match[1].trim(), body });
+  }
+
+  // Try pattern 2: ## EXTRA #1: Title  or  ### EXTRA: Title
+  if (blocks.length === 0) {
+    const re2 = /^#{1,4}\s*EXTRA[^:\n]*[:\-–]?\s*([^\n]+)/gim;
+    const positions = [];
+    while ((match = re2.exec(text)) !== null) {
+      // Clean the title — strip leading #1 / #2 etc and colons
+      const title = match[1].replace(/^[#\d\.\s:–-]+/, '').trim();
+      positions.push({ title, end: match.index + match[0].length });
+    }
+    for (let i = 0; i < positions.length; i++) {
+      const start = positions[i].end;
+      const end = i + 1 < positions.length ? positions[i + 1].end - positions[i + 1].title.length - 10 : text.length;
+      const body = text.slice(start, end).trim();
+      if (body) blocks.push({ title: positions[i].title, body });
+    }
+  }
+
+  // Fallback — whole thing as one block
+  if (blocks.length === 0) {
+    blocks.push({ title: 'Extras and Templates', body: text.trim() });
+  }
+  return blocks;
+}
+
+function renderMarkdown(text) {
+  // Convert markdown to clean HTML — no symbols bleeding through
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^#{1,6}\s+(.+)$/gm, '<strong style="display:block;margin:12px 0 4px;font-size:13px;">$1</strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^---+\s*$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">')
+    .replace(/^(\d+)\.\s+(.+)$/gm, '<div style="padding-left:16px;margin:3px 0;"><span style="color:var(--pink);font-weight:700;">$1.</span> $2</div>')
+    .replace(/^[-•]\s+(.+)$/gm, '<div style="padding-left:16px;margin:3px 0;">• $1</div>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+
+function showExtrasOutput() {
+  const container = document.getElementById('extrasCards');
+  if (container) {
+    const blocks = parseExtrasContent(S.extrasContent || '');
+    container.innerHTML = blocks.map((block, i) => `
+      <div class="extras-output-card">
+        <div class="extras-output-header">
+          <h4>${block.title}</h4>
+          <button class="btn btn-sm btn-ghost" style="font-size:12px;" onclick="copyExtrasBlock(${i}, this)">Copy</button>
+        </div>
+        <div class="extras-output-body" id="extras-block-${i}" contenteditable="true">${renderMarkdown(block.body)}</div>
+      </div>`).join('');
+  }
+  // Keep selection cards visible so user can change selections and regenerate
+  showEl('extras-generate-btn');
+  // Change the generate button to "Regenerate" now that content exists
+  const genBtn = document.querySelector('#extras-generate-btn .btn-primary');
+  if (genBtn) genBtn.textContent = 'Regenerate with my selection →';
+  showEl('extras-output');
+}
+
+function copyExtrasBlock(i, btn) {
+  const el = document.getElementById('extras-block-' + i);
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+function skipExtras() {
+  S.extrasContent = '';
+  markDone('m2-extras');
+  save();
+  goTo('m2-preview');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 2 — PREVIEW
+// ═══════════════════════════════════════════════════════════════
+function renderProductPreview() {
+  const container = document.getElementById('productPreview');
+  if (!container || !S.chosenName) return;
+
+  let html = `<div class="card card-pink" style="margin-bottom:20px;">
+    <h2 style="font-family:'Libre Baskerville',Georgia,serif; color:var(--pink);">${S.chosenName}</h2>
+    <p style="margin-top:4px; color:var(--text-soft);">${S.productFormat} · ${S.chosenPrice} · For: ${S.audience}</p>
+  </div>`;
+
+  S.outline.forEach((sec, i) => {
+    const content = S.sectionContent[i] || '(Not yet written)';
+    html += `
+    <div class="download-asset">
+      <h4>Section ${i+1}: ${sec.title}</h4>
+      <div class="asset-content">${content}</div>
+    </div>`;
+  });
+
+  if (S.extrasContent) {
+    html += `<div class="download-asset">
+      <h4>Extras + Templates</h4>
+      <div class="asset-content">${S.extrasContent}</div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+  markDone('m2-extras');
+  markDone('m2-preview');
+  save();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 3 — DESIGN
+// ═══════════════════════════════════════════════════════════════
+function showDesignToolExtras() {
+  const wrap = document.getElementById('design-tool-extras');
+  if (!wrap) return;
+  const fmt = (S.productFormat || '').toLowerCase();
+
+  // Email courses are delivered by text — no visual design tool needed
+  const isTextOnly = fmt.includes('email course');
+  const hasVideo = fmt.includes('video') || fmt.includes('workshop') || fmt.includes('audio');
+
+  let html = '';
+
+  if (!isTextOnly) {
+    html += `<div class="card" style="margin-bottom:16px;">
+      <h3 style="margin-bottom:8px;">Also worth knowing: Claude.ai/design</h3>
+      <p style="font-size:14px; margin-bottom:10px;">Claude's design tool can generate a full visual layout for workbooks, guides, checklists, slide decks — paste in your outline and it builds a polished draft in seconds. Free to use, no design skill needed.</p>
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">Copy the prompt below, open Claude Design, and paste it in. It has everything Claude needs to build your layout.</p>
+      <div style="background:#fff8e1; border:1px solid #f0c040; border-radius:8px; padding:10px 14px; font-size:13px; color:#7a5c00; margin-bottom:12px;">
+        ⚠️ Confirm your brand colours in the section below first — the prompt updates automatically once you've added them.
+      </div>
+      <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-size:12px; line-height:1.6; margin-bottom:12px; white-space:pre-wrap; max-height:180px; overflow-y:auto;" id="claude-design-prompt">${buildClaudeDesignPrompt()}</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="copyClaudeDesignPrompt(this)">Copy prompt</button>
+        <a class="btn btn-outline btn-sm" href="https://claude.ai/design" target="_blank">Open Claude Design →</a>
+      </div>
+    </div>`;
+  }
+
+  if (hasVideo) {
+    html += `<div class="card" style="margin-bottom:16px;">
+      <h3 style="margin-bottom:8px;">For filming: Loom or Zoom</h3>
+      <p style="font-size:14px; margin-bottom:10px;">Both are free. Loom is the easiest — screen + face recording in one click, and it gives you a shareable link instantly. Zoom is great if you prefer to record locally and keep the file. Either one does the job.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn btn-outline btn-sm" href="https://loom.com" target="_blank">Open Loom →</a>
+        <a class="btn btn-outline btn-sm" href="https://zoom.us" target="_blank">Open Zoom →</a>
+      </div>
+    </div>`;
+  }
+
+  wrap.innerHTML = html;
+}
+
+function buildClaudeDesignPrompt() {
+  const fmt = S.productFormat || 'digital product';
+  const name = S.chosenName || 'my digital product';
+  const audience = S.audience || 'my target audience';
+
+  // Prefer AI-suggested colours from the design guide (if "help me choose" was used)
+  // Fall back to user-entered hex codes, then no colours
+  let colourLine;
+  const aiHexCodes = S.designContent ? extractHexCodes(S.designContent) : [];
+  if (aiHexCodes.length > 0) {
+    colourLine = `Brand colours (chosen for this product): ${aiHexCodes.join(', ')}`;
+  } else {
+    const c1 = document.getElementById('brandColour1')?.value?.trim();
+    const c2 = document.getElementById('brandColour2')?.value?.trim();
+    const c3 = document.getElementById('brandColour3')?.value?.trim();
+    const entered = [c1, c2, c3].filter(Boolean);
+    colourLine = entered.length
+      ? `Brand colours: ${entered.join(', ')}`
+      : 'No set brand colours — choose something warm, clean, and professional.';
+  }
+
+  const outlineLines = S.outline && S.outline.length
+    ? S.outline.map((s, i) => `${i + 1}. ${s.title}`).join('\n')
+    : '(Outline not yet built — add your sections once the outline is complete)';
+
+  return `Please design a ${fmt} called "${name}".
+
+AUDIENCE: ${audience}
+
+SECTIONS TO INCLUDE:
+${outlineLines}
+
+DESIGN STYLE: Clean, warm, and easy to read. Professional but not corporate. Plenty of white space. Good contrast. Easy to follow for someone who is a beginner.
+
+${colourLine}
+
+Please create a complete, ready-to-use layout with all sections included. Keep it simple and beautiful.`;
+}
+
+function refreshClaudeDesignPrompt() {
+  const el = document.getElementById('claude-design-prompt');
+  if (el) el.textContent = buildClaudeDesignPrompt();
+}
+
+function copyClaudeDesignPrompt(btn) {
+  const el = document.getElementById('claude-design-prompt');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.style.background = 'var(--success)';
+    btn.style.color = 'white';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 2500);
+  });
+}
+
+async function generateDesignGuide(useOwnColours = true) {
+  clearError('design-error');
+  showLoading('design-loading');
+
+  const c1 = document.getElementById('brandColour1')?.value?.trim();
+  const c2 = document.getElementById('brandColour2')?.value?.trim();
+  const c3 = document.getElementById('brandColour3')?.value?.trim();
+  const hasColours = useOwnColours && (c1 || c2 || c3);
+  const colourNote = hasColours
+    ? `Their brand colours are: ${[c1,c2,c3].filter(Boolean).join(', ')}. Use these — do NOT suggest different colours. For each colour, say where to use it (e.g. headings, backgrounds, buttons).`
+    : `They don't have brand colours yet. Suggest 3 colours that would resonate with their specific audience: ${S.audience}. Base your choices on colour psychology — what emotions each colour triggers, what it communicates subconsciously, and why that matters for this audience in particular. For each colour: give the hex code in #RRGGBB format (e.g. #E8A87C) — always include the # symbol, explain in 2–3 plain sentences why you chose it (ground it in colour psychology and what this specific audience responds to — not generic design advice), and say where to use it in the product. Write it like you genuinely thought about who will be buying this.`;
+
+  try {
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}"
+Format: ${S.productFormat}
+Audience: ${S.audience}
+
+Write a clear, simple design guide for this digital product. The creator already knows which tool to use — do NOT recommend any specific tool. Focus entirely on the visual decisions: colours, fonts, layout, and what to avoid.
+
+Write in plain English — no markdown formatting (no # heading symbols, no ** bold, no - bullet dashes). Use numbered sections and short paragraphs only. IMPORTANT: When writing hex colour codes, always include the # symbol (e.g. #FF6B6B) — this is required for the colour swatches to display correctly.
+
+SECTION 1: Your colours
+${colourNote}
+
+SECTION 2: Fonts
+Recommend 2 fonts (available free in both Canva and Claude Design). One for headings, one for body text. Explain in one sentence why they work together for this specific audience.
+
+SECTION 3: Layout tips
+3–4 practical tips for making this specific format (${S.productFormat}) look clean and professional. Short sentences, no design jargon. Specific to this format — not generic advice.
+
+SECTION 4: 3 things to avoid
+The most common design mistakes for this type of product. Plain language.
+
+Write everything as if you're texting a friend simple advice — warm, clear, no overwhelm. No bullet points formatted with dashes or asterisks. Use clean numbered lists or short paragraphs only.`;
+
+    const result = await callClaude(prompt);
+    S.designContent = result;
+    S.designSuggestedColours = !hasColours; // flag so swatches show on restore
+    save();
+    showDesignOutput();
+    hideLoading('design-loading');
+    markDone('m3-design');
+  } catch(e) {
+    hideLoading('design-loading');
+    setError('design-error', e.message);
+  }
+}
+
+async function suggestColourPalettes() {
+  const btn = document.getElementById('colour-help-btn');
+  const loading = document.getElementById('colour-help-loading');
+  const container = document.getElementById('colour-palette-suggestions');
+  if (btn) btn.disabled = true;
+  loading.style.display = 'flex';
+  container.style.display = 'none';
+
+  try {
+    const prompt = `You are a professional brand designer with deep expertise in colour psychology, particularly for women-led businesses and coaching brands.
+
+The business owner's audience is: ${S.audience || 'women building digital businesses'}
+Their product is: ${S.chosenName || 'a digital product'}
+Their brand voice is: ${S.brandVoice || 'warm, direct, professional'}
+
+Generate 3 distinct colour palette options. Each palette must:
+- Feel cohesive and intentional — not random
+- Work well for a digital product (good readability, clear contrast)
+- Resonate with the specific audience described above
+- Be grounded in colour psychology — choose colours for a reason, not aesthetics alone
+
+COLOUR PSYCHOLOGY PRINCIPLES TO APPLY:
+- Warm tones (coral, terracotta, warm rose, amber) communicate approachability, warmth, and energy — great for action-oriented audiences
+- Deep tones (teal, forest green, navy, plum) communicate trust, authority, and calm — great for audiences who want to feel safe and guided
+- Neutral warm backgrounds (cream, soft white, warm grey) reduce visual fatigue and feel premium
+- Avoid cold, corporate blues and stark black/white unless the brand voice is specifically professional/corporate
+- Contrast matters: primary + secondary should have clear contrast for readability
+- The background/neutral should feel like a resting place — never compete with the primary
+
+Return ONLY a JSON array of exactly 3 palettes:
+[
+  {
+    "name": "Short evocative palette name (e.g. Warm Authority, Rooted and Real, Soft Power)",
+    "mood": "One sentence — the feeling this palette creates and why it works for this audience",
+    "primary": "#RRGGBB",
+    "secondary": "#RRGGBB",
+    "background": "#RRGGBB",
+    "primaryUse": "e.g. Headings, buttons, key highlights",
+    "secondaryUse": "e.g. Subheadings, icons, accent elements",
+    "backgroundUse": "e.g. Page background, section fills"
+  }
+]
+
+All hex codes must include the # symbol. Choose with intention — these should make a real designer nod in approval.`;
+
+    const result = await callClaude(prompt);
+    const jsonMatch = result.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('Could not generate palettes. Please try again.');
+    const palettes = JSON.parse(jsonMatch[0]);
+
+    container.innerHTML = `
+      <p style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:12px;">Choose a palette — or try different ones:</p>
+      ${palettes.map((p, i) => `
+        <div style="border:1.5px solid var(--border); border-radius:10px; padding:14px; margin-bottom:10px; background:var(--white);">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+            <div>
+              <span style="font-size:14px; font-weight:700; color:var(--text);">${p.name}</span>
+              <p style="font-size:12px; color:var(--text-soft); margin-top:2px;">${p.mood}</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <div style="text-align:center;">
+              <div style="width:44px; height:44px; border-radius:8px; background:${p.primary}; border:1px solid rgba(0,0,0,0.08); margin-bottom:3px;"></div>
+              <span style="font-size:10px; font-family:monospace; color:var(--text-soft);">${p.primary}</span>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:44px; height:44px; border-radius:8px; background:${p.secondary}; border:1px solid rgba(0,0,0,0.08); margin-bottom:3px;"></div>
+              <span style="font-size:10px; font-family:monospace; color:var(--text-soft);">${p.secondary}</span>
+            </div>
+            <div style="text-align:center;">
+              <div style="width:44px; height:44px; border-radius:8px; background:${p.background}; border:1px solid rgba(0,0,0,0.08); margin-bottom:3px;"></div>
+              <span style="font-size:10px; font-family:monospace; color:var(--text-soft);">${p.background}</span>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="applyColourPalette('${p.primary}','${p.secondary}','${p.background}', this)">Use this palette →</button>
+        </div>`).join('')}
+      <button class="btn btn-ghost btn-sm" style="margin-top:4px;" onclick="suggestColourPalettes()">Try different palettes →</button>`;
+
+    container.style.display = 'block';
+  } catch(e) {
+    container.innerHTML = `<p style="font-size:13px; color:var(--error);">${e.message}</p>`;
+    container.style.display = 'block';
+  } finally {
+    loading.style.display = 'none';
+    if (btn) btn.disabled = false;
+  }
+}
+
+function applyColourPalette(primary, secondary, background, btn) {
+  // Fill the hex inputs
+  const c1 = document.getElementById('brandColour1');
+  const c2 = document.getElementById('brandColour2');
+  const c3 = document.getElementById('brandColour3');
+  if (c1) c1.value = primary;
+  if (c2) c2.value = secondary;
+  if (c3) c3.value = background;
+  // Update the Claude Design prompt immediately
+  refreshClaudeDesignPrompt();
+  // Visual confirmation on button
+  const orig = btn.textContent;
+  btn.textContent = '✓ Applied';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  setTimeout(() => { btn.textContent = orig; btn.disabled = false; btn.style.opacity = '1'; }, 2000);
+}
+
+function extractHexCodes(text) {
+  const matches = text.match(/#[0-9A-Fa-f]{6}\b/g);
+  return matches ? [...new Set(matches)] : [];
+}
+
+function showDesignOutput() {
+  const el = document.getElementById('designContent');
+  if (el) {
+    // Convert plain text to clean HTML paragraphs — no markdown leaking through
+    const html = S.designContent
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .split(/\n\n+/).map(p => `<p style="margin-bottom:12px;">${p.replace(/\n/g,'<br>')}</p>`).join('');
+    el.innerHTML = html;
+  }
+  // Show colour swatches if AI suggested colours
+  const swatchWrap = document.getElementById('design-colour-swatches');
+  if (swatchWrap) {
+    const hexCodes = extractHexCodes(S.designContent || '');
+    if (hexCodes.length > 0) {
+      swatchWrap.innerHTML = `<div style="margin-bottom:16px;">
+        <p style="font-size:13px; font-weight:600; margin-bottom:10px;">Your suggested colour palette:</p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          ${hexCodes.map(hex => `
+            <div style="text-align:center;">
+              <div style="width:52px; height:52px; border-radius:10px; background:${hex}; border:1px solid rgba(0,0,0,0.08); margin-bottom:4px;"></div>
+              <span style="font-size:11px; font-family:monospace; color:var(--text-soft);">${hex}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+      swatchWrap.style.display = 'block';
+    } else {
+      swatchWrap.style.display = 'none';
+    }
+  }
+  refreshClaudeDesignPrompt();
+  showEl('design-output');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 3 — PLATFORM
+// ═══════════════════════════════════════════════════════════════
+function selectPlatform(p) {
+  S.platformChoice = p;
+  save();
+  showEl('platform-confirmed');
+  markDone('m3-platform');
+}
+
+function showOtherPlatform() {
+  showEl('other-platform-section');
+}
+
+function confirmOtherPlatform() {
+  const name = document.getElementById('otherPlatformName').value.trim();
+  if (!name) { alert('Please tell me which platform you\'re using.'); return; }
+  S.otherPlatform = name;
+  S.platformChoice = 'other';
+  save();
+  markDone('m3-platform');
+  showEl('platform-confirmed');
+  goTo('m3-emails');
+}
+
+function restorePlatformState() {
+  if (S.platformChoice === 'other') {
+    showEl('other-platform-section');
+    setVal('otherPlatformName', S.otherPlatform);
+    showEl('platform-confirmed');
+  } else if (S.platformChoice === 'kartra') {
+    showEl('platform-confirmed');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 3 — LISTING
+// ═══════════════════════════════════════════════════════════════
+async function generateListing() {
+  hideEl('listing-generate-btn');
+  clearError('listing-error');
+  showLoading('listing-loading');
+
+  const platform = S.platformChoice === 'kartra' ? 'Kartra' : (S.otherPlatform || 'their sales platform');
+
+  try {
+    const outlineSummary = S.outline.map((s, i) => `• ${s.title}`).join('\n');
+
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}"
+Format: ${S.productFormat}
+Price: ${S.chosenPrice}
+Platform: ${platform}
+What's inside:
+${outlineSummary}
+
+Write a complete product listing for ${platform}. This is a low-ticket impulse-buy product. The listing must create INSTANT DESIRE — someone should read it and think "I need this right now" without hesitation.
+
+LISTING FRAMEWORK:
+
+PRODUCT TITLE:
+(The product name with a punchy tagline that states the transformation in under 10 words)
+
+SHORT DESCRIPTION (2–3 sentences):
+(Lead with the result, not the method. What does life look like after they buy this? Make it visual and specific.)
+
+THE PROBLEM:
+(2–3 sentences. Describe the exact frustration or stuck place they're in RIGHT NOW. Make them feel seen — not lectured.)
+
+THE SOLUTION:
+(2–3 sentences. Introduce this product as the simplest, fastest path to the result they want. No fluff.)
+
+WHAT'S INCLUDED:
+(Every component listed with a one-line benefit statement. Focus on speed and ease — not volume.)
+
+THIS IS FOR YOU IF:
+(5 bullet points — specific scenarios. Each one should make a reader think "that's exactly me.")
+
+WHAT YOU'LL BE ABLE TO DO AFTER:
+(4 outcome statements. Start each with an action verb. Specific and measurable where possible.)
+
+THE INVESTMENT:
+(${S.chosenPrice}. Frame it as a no-brainer — compare it to the cost of staying stuck, not to competing products.)
+
+Write in a ${S.brandVoice} tone. No AI clichés. No hollow empathy openers. Write like a real person who genuinely gets their audience.`;
+
+    const result = await callClaude(prompt);
+    S.listingContent = result;
+    save();
+    showListingOutput();
+    hideLoading('listing-loading');
+    markDone('m3-platform');
+    markDone('m3-listing');
+  } catch(e) {
+    hideLoading('listing-loading');
+    showEl('listing-generate-btn');
+    setError('listing-error', e.message);
+  }
+}
+
+function showListingOutput() {
+  const el = document.getElementById('listingContent');
+  if (el) el.textContent = S.listingContent;
+  hideEl('listing-generate-btn');
+  showEl('listing-output');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 3 — EMAILS
+// ═══════════════════════════════════════════════════════════════
+async function generateEmails() {
+  hideEl('emails-generate-btn');
+  clearError('emails-error');
+  showLoading('emails-loading');
+
+  try {
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}"
+Format: ${S.productFormat}
+Price: ${S.chosenPrice}
+
+Write 2 customer emails for this product. Format with <br><br> between every sentence (for Kartra's email editor).
+
+EMAIL 1 — WELCOME + ACCESS
+Subject line: (Give 3 options)
+Body: Welcome them, deliver access instructions, set expectations for what they'll get from the product. Warm and genuine — not corporate. Sign off: ${S.userName} XO
+
+EMAIL 2 — DAY 2 CHECK-IN
+Subject line: (Give 3 options)
+Body: Check in, give them a quick win or encouragement, answer a common question or objection they might have at this stage. No hard sell. Just genuine support. Sign off: ${S.userName} XO
+
+Write in a ${S.brandVoice} tone. No AI clichés. No hollow openers. Write like a real person who genuinely cares.
+
+Separate the two emails clearly with: ========== EMAIL 2 ==========`;
+
+    const result = await callClaude(prompt);
+    S.emailsContent = result;
+    save();
+    showEmailsOutput();
+    hideLoading('emails-loading');
+    markDone('m3-emails');
+  } catch(e) {
+    hideLoading('emails-loading');
+    showEl('emails-generate-btn');
+    setError('emails-error', e.message);
+  }
+}
+
+function showEmailsOutput() {
+  const el = document.getElementById('emailsContent');
+  if (el) el.textContent = S.emailsContent;
+
+  const tip = document.getElementById('emails-paste-tip');
+  if (tip) {
+    const platform = S.platformChoice === 'kartra'
+      ? "Kartra"
+      : (S.otherPlatform || 'your email platform');
+    const isKartra = S.platformChoice === 'kartra';
+    tip.textContent = isKartra
+      ? 'These are formatted with <br><br> between paragraphs — paste into Kartra\'s HTML/Source view.'
+      : `These are formatted with line breaks between paragraphs — paste into ${platform}'s email editor. If your platform has an HTML view, use that for the cleanest result.`;
+  }
+
+  hideEl('emails-generate-btn');
+  showEl('emails-output');
+}
+
+async function reviseEmails() {
+  const feedback = document.getElementById('emails-feedback')?.value?.trim();
+  if (!feedback) { alert('Tell me what to change first.'); return; }
+  clearError('emails-error');
+  showLoading('emails-loading');
+
+  try {
+    const prompt = `${bizContext()}
+
+You wrote these welcome emails for a digital product called "${S.chosenName}":
+
+${S.emailsContent}
+
+The creator has this feedback:
+"${feedback}"
+
+Rewrite BOTH emails applying that feedback. Keep everything else strong. Maintain <br><br> formatting between sentences. Keep sign-off as ${S.userName} XO. Return the full revised emails only — no preamble, no explanation.`;
+
+    const result = await callClaude(prompt);
+    S.emailsContent = result;
+    save();
+    const el = document.getElementById('emailsContent');
+    if (el) el.textContent = S.emailsContent;
+    document.getElementById('emails-feedback').value = '';
+    hideLoading('emails-loading');
+  } catch(e) {
+    hideLoading('emails-loading');
+    setError('emails-error', e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 3 — SALES COPY
+// ═══════════════════════════════════════════════════════════════
+async function generateSalesCopy() {
+  hideEl('sales-generate-btn');
+  clearError('sales-error');
+  showLoading('sales-loading');
+
+  try {
+    const outlineSummary = S.outline.map(s => `• ${s.title}: ${s.description}`).join('\n');
+
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}"
+Format: ${S.productFormat}
+Price: ${S.chosenPrice}
+What's inside:
+${outlineSummary}
+
+Write a complete sales page. This is a low-ticket impulse-buy product — the copy must move someone from "what is this?" to "buying now" in under 3 minutes of reading. No fluff. Every section earns its place.
+
+HEADLINE:
+(The transformation in one line. Specific. Not clever — clear. Make someone stop scrolling.)
+
+SUBHEADLINE:
+(Add the "for who" and "how fast" context. One sentence.)
+
+THE HOOK — OPEN WITH THE PROBLEM:
+(2–3 sentences. Drop straight into their reality. The specific frustration, the thing they've already tried that hasn't worked, the gap between where they are and where they want to be. No "I see you" or hollow empathy — just truth.)
+
+THE SHIFT:
+(2–3 sentences. What changes when they have this? Not features — the feeling. The freedom. The result.)
+
+WHAT'S INSIDE:
+(Each section/module with a clear benefit — not just what it is, but what it does for them. Lead with the outcome.)
+
+WHO THIS IS FOR:
+(5 bullet points. Each one should be a specific scenario — someone should read these and think "that's literally me right now.")
+
+SOCIAL PROOF SECTION:
+Write 3 clearly labelled PLACEHOLDER slots for testimonials. Format as:
+[TESTIMONIAL 1 — FIRST NAME, brief description e.g. "mum of 3 from Leeds"]
+"ADD YOUR REAL TESTIMONIAL HERE — before adding your product for sale, share it with 2–3 people in your audience and ask for honest feedback you can use here."
+
+Do NOT write fake quotes or made-up results. These placeholders should prompt the creator to collect real feedback before launching.
+
+WHAT YOU'LL WALK AWAY WITH:
+(5 specific outcomes. Start each with an action verb. Be concrete — not "more confidence" but "a finished product description you can copy-paste straight to your sales page".)
+
+THE INVESTMENT:
+(${S.chosenPrice}. One short paragraph. Honest value framing — compare it to the cost of staying stuck or spending hours trying to figure this out alone. No fake scarcity.)
+
+CLOSE + CTA:
+(2–3 sentences. Warm, direct, real. Then the button text — should be action + outcome, not just "buy now".)
+
+Write in a ${S.brandVoice} tone. No em dashes. No AI clichés. No hollow motivation. Write like a person who genuinely believes in this product and knows exactly who it's for.`;
+
+    const result = await callClaude(prompt);
+    S.salesContent = result;
+    save();
+    showSalesOutput();
+    hideLoading('sales-loading');
+    markDone('m3-sales');
+  } catch(e) {
+    hideLoading('sales-loading');
+    showEl('sales-generate-btn');
+    setError('sales-error', e.message);
+  }
+}
+
+async function reviseSalesCopy() {
+  const feedback = document.getElementById('sales-feedback')?.value?.trim();
+  if (!feedback) { alert('Please type your feedback first.'); return; }
+  showLoading('sales-loading');
+  hideEl('sales-output');
+  try {
+    const prompt = `${bizContext()}
+Product: "${S.chosenName}" — ${S.chosenPrice}
+Current sales page copy:
+"""
+${S.salesContent}
+"""
+User feedback: ${feedback}
+
+Revise the sales page based on this feedback. Keep everything that's working. Change only what they've asked.
+RULES: No AI clichés. No em dashes. No made-up testimonials or data. Write like a real human. Keep it lean and direct.
+Return only the full revised sales page. No meta commentary.`;
+    const result = await callClaude(prompt);
+    S.salesContent = result;
+    save();
+    hideLoading('sales-loading');
+    showSalesOutput();
+  } catch(e) {
+    hideLoading('sales-loading');
+    showEl('sales-output');
+    alert('Could not revise: ' + e.message);
+  }
+}
+
+function showSalesOutput() {
+  const el = document.getElementById('salesContent');
+  if (el) el.textContent = S.salesContent;
+  hideEl('sales-generate-btn');
+  showEl('sales-output');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE 3 — LAUNCH PLAN
+// ═══════════════════════════════════════════════════════════════
+const PLATFORM_META = {
+  'instagram':        { label: 'Instagram',          icon: '📸' },
+  'facebook-personal':{ label: 'Facebook Personal',  icon: '👤' },
+  'facebook-group':   { label: 'Facebook Group',     icon: '👥' },
+  'tiktok':           { label: 'TikTok',             icon: '🎵' },
+  'linkedin':         { label: 'LinkedIn',           icon: '💼' },
+  'x':                { label: 'X (Twitter)',         icon: '🐦' },
+  'snapchat':         { label: 'Snapchat',           icon: '👻' },
+  'email':            { label: 'Email List',         icon: '📧' },
+  'meta-ads':         { label: 'Meta/Facebook Ads',  icon: '📢' },
+};
+
+function togglePlatformCard(cardEl, key) {
+  cardEl.classList.toggle('selected');
+  if (cardEl.classList.contains('selected')) {
+    if (!S.launchPlatforms.includes(key)) S.launchPlatforms.push(key);
+  } else {
+    S.launchPlatforms = S.launchPlatforms.filter(p => p !== key);
+  }
+  save();
+}
+
+function restorePlatformCards() {
+  (S.launchPlatforms || []).forEach(key => {
+    const el = document.getElementById('plat-card-' + key);
+    if (el) el.classList.add('selected');
+  });
+}
+
+function platformInstructions(key) {
+  const map = {
+    'instagram':         'Write for Instagram: a feed post caption (hook-first, 150–200 words, CTA at end) AND a 4-slide Stories script (one punchy line per slide, last slide has CTA).',
+    'facebook-personal': 'Write for a Facebook personal profile post: conversational, story-led, 100–150 words. Write like you\'re talking to friends, not broadcasting. CTA at end.',
+    'facebook-group':    'Write for a Facebook Group post: community-first tone, ask a question or share a win to spark engagement, then tie it back to the product. 100–150 words.',
+    'tiktok':            'Write a TikTok script: opening hook (first 3 seconds — say it exactly), main body (spoken, punchy, under 45 seconds), CTA at end. Write it how someone would actually say it out loud.',
+    'linkedin':          'Write a LinkedIn post: professional but personal, lead with a bold statement or insight, share the story behind the product, end with a clear CTA. 150–200 words.',
+    'x':                 'Write a thread for X (Twitter): 4–5 tweets. Tweet 1 is the hook — short, punchy, stops the scroll. Tweets 2–4 build the story or value. Tweet 5 is the CTA.',
+    'snapchat':          'Write a Snapchat story script: 3–4 short snap captions (under 50 characters each), text overlay style. Casual, direct, and fast. Final snap has a clear swipe-up CTA.',
+    'email':             'Write an email: give 3 subject line options, then write the full email body. Format with <br><br> between every sentence (for email editors). Sign off: [NAME] XO.',
+    'meta-ads':          'Write 2 Meta ad versions: Version A is a short-form video script (15–20 seconds, hook + problem + product + CTA). Version B is a static ad copy (headline, body copy under 125 characters, CTA button text).',
+  };
+  return map[key] || `Write content for ${key}.`;
+}
+
+async function generateLaunchPlan() {
+  const platforms = S.launchPlatforms || [];
+  if (platforms.length === 0) {
+    alert('Select at least one platform first.');
+    return;
+  }
+
+  hideEl('launch-generate-btn');
+  clearError('launch-error');
+  showLoading('launch-loading');
+
+  const platformList = platforms.map(k => PLATFORM_META[k]?.label || k).join(', ');
+
+  const dayInstructions = platforms.map(key => {
+    const meta = PLATFORM_META[key];
+    return `For ${meta.icon} ${meta.label}:\n${platformInstructions(key)}`;
+  }).join('\n\n');
+
+  try {
+    const prompt = `${bizContext()}
+
+Product: "${S.chosenName}" — ${S.chosenPrice}
+Problem it solves: ${S.chosenProduct?.problem || S.transformation}
+Platforms selected: ${platformList}
+
+Write a 3-day launch plan. For each day, write specific content for EVERY platform listed. Use this EXACT structure — it will be parsed programmatically, so follow it precisely:
+
+THE 3-DAY FRAMEWORK:
+Day 1 — Build the problem (audience feels seen before they see the solution)
+Day 2 — Share the story / give value (build trust, no direct pitch)
+Day 3 — Direct offer (confident, clear, no soft-launching)
+
+For each platform, here is what to write:
+${dayInstructions}
+
+OUTPUT FORMAT — follow this exactly:
+=== PLATFORM: [platform label] ===
+
+DAY 1 — [day theme]
+[all content for this platform on day 1]
+
+DAY 2 — [day theme]
+[all content for this platform on day 2]
+
+DAY 3 — [day theme]
+[all content for this platform on day 3]
+
+=== END PLATFORM ===
+
+Repeat this block for every platform. No extra commentary outside these blocks.
+
+Brand voice: ${S.brandVoice}
+Keep it achievable — 30 minutes of content creation per day maximum.
+IMPORTANT: Do not make up reviews, results, or testimonials. Use [YOUR REAL RESULT HERE] placeholders where social proof is needed.`;
+
+    const result = await callClaude(prompt);
+    S.launchContent = result;
+    save();
+    showLaunchOutput();
+    hideLoading('launch-loading');
+    markDone('m3-launch');
+  } catch(e) {
+    hideLoading('launch-loading');
+    showEl('launch-generate-btn');
+    setError('launch-error', e.message);
+  }
+}
+
+function parseLaunchContent(text) {
+  // Split by === PLATFORM: X === ... === END PLATFORM ===
+  const blocks = [];
+  const regex = /=== PLATFORM: (.+?) ===\n([\s\S]*?)=== END PLATFORM ===/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    blocks.push({ label: match[1].trim(), body: match[2].trim() });
+  }
+  // Fallback: if delimiters weren't followed, show as one block
+  if (blocks.length === 0) {
+    blocks.push({ label: 'Your Launch Plan', body: text.trim() });
+  }
+  return blocks;
+}
+
+function showLaunchOutput() {
+  const container = document.getElementById('launchPlatformCards');
+  if (!container) return;
+
+  const blocks = parseLaunchContent(S.launchContent || '');
+
+  // Find icon for each block label
+  const iconFor = (label) => {
+    const entry = Object.values(PLATFORM_META).find(m => m.label === label);
+    return entry ? entry.icon + ' ' : '';
+  };
+
+  container.innerHTML = blocks.map((block, i) => `
+    <div class="launch-platform-card">
+      <div class="launch-platform-header">
+        <h4>${iconFor(block.label)}${block.label}</h4>
+        <button class="btn btn-sm btn-ghost" style="font-size:12px;" onclick="copyLaunchBlock(${i}, this)">Copy</button>
+      </div>
+      <div class="launch-platform-body" id="launch-block-${i}" contenteditable="true">${formatLaunchBody(block.body)}</div>
+    </div>`).join('');
+
+  hideEl('launch-generate-btn');
+  showEl('launch-output');
+}
+
+function formatLaunchBody(body) {
+  return renderMarkdown(body)
+    .replace(/(DAY \d+[^<\n]*)/g, '<span class="launch-day-label">$1</span>');
+}
+
+function copyLaunchBlock(i, btn) {
+  const el = document.getElementById('launch-block-' + i);
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+function resetLaunchPlan() {
+  S.launchContent = '';
+  save();
+  hideEl('launch-output');
+  showEl('launch-generate-btn');
+  restorePlatformCards();
+}
+
+async function reviseLaunchPlan() {
+  const feedback = document.getElementById('launch-feedback')?.value?.trim();
+  if (!feedback) { alert('Tell me what to change first.'); return; }
+  clearError('launch-error');
+  showLoading('launch-loading');
+
+  try {
+    const prompt = `${bizContext()}
+
+You wrote this launch plan for a product called "${S.chosenName}":
+
+${S.launchContent}
+
+The creator has this feedback:
+"${feedback}"
+
+Revise the entire launch plan applying that feedback. Keep everything that's already working. Return the full revised plan only — no preamble, no explanation.`;
+
+    const result = await callClaude(prompt);
+    S.launchContent = result;
+    save();
+    showLaunchOutput();
+    document.getElementById('launch-feedback').value = '';
+    hideLoading('launch-loading');
+  } catch(e) {
+    hideLoading('launch-loading');
+    setError('launch-error', e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DOWNLOAD
+// ═══════════════════════════════════════════════════════════════
+function renderProductBrief() {
+  const brief = `PRODUCT BRIEF — ${S.chosenName || 'My Digital Product'}
+${'='.repeat(50)}
+
+CREATOR
+Name: ${S.userName}
+Business: ${S.audience ? 'Serving: ' + S.audience : ''}
+
+PRODUCT OVERVIEW
+Name: ${S.chosenName || ''}
+Format: ${S.productFormat || ''}
+Price: ${S.chosenPrice || ''}
+Transformation: ${S.transformation || ''}
+Brand Voice: ${S.brandVoice || ''}
+Topics/Expertise: ${S.topics || ''}
+
+PRODUCT OUTLINE
+${S.outline.map((s, i) => `${i + 1}. ${s.title}${s.description ? ' — ' + s.description : ''}`).join('\n')}
+
+FULL PRODUCT CONTENT
+${S.outline.map((s, i) => `--- ${s.title} ---\n${S.sectionContent[i] || '(Not yet written)'}`).join('\n\n')}${S.extrasContent ? '\n\n--- EXTRAS & TEMPLATES ---\n' + S.extrasContent : ''}
+
+MARKETING ASSETS
+${S.salesContent ? '--- SALES PAGE ---\n' + S.salesContent : ''}
+${S.emailsContent ? '\n--- WELCOME EMAILS ---\n' + S.emailsContent : ''}
+${S.launchContent ? '\n--- LAUNCH PLAN ---\n' + S.launchContent : ''}`.trim();
+
+  const el = document.getElementById('productBriefContent');
+  if (el) el.textContent = brief;
+  S._productBrief = brief;
+}
+
+function copyProductBrief(btn) {
+  if (!S._productBrief) return;
+  navigator.clipboard.writeText(S._productBrief).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.style.background = 'var(--success)';
+    btn.style.color = 'white';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 2500);
+  });
+}
+
+function renderDownloadAssets() {
+  const container = document.getElementById('downloadAssets');
+  if (!container) return;
+
+  renderProductBrief();
+
+  const assets = [
+    {
+      title: 'Your Product: ' + (S.chosenName || 'Digital Product'),
+      description: 'All your product sections and extras — paste this into a Google Doc, Canva, or your chosen creation tool.',
+      content: S.outline.map((sec, i) =>
+        `=== ${sec.title} ===\n\n${S.sectionContent[i] || '(Not yet written)'}\n`
+      ).join('\n') + (S.extrasContent ? '\n\n=== EXTRAS & TEMPLATES ===\n\n' + S.extrasContent : '')
+    },
+    {
+      title: 'Welcome Emails',
+      description: 'Paste each email into Kartra\'s email editor (HTML/Source view) — the formatting is already set up for you.',
+      content: S.emailsContent
+    },
+    {
+      title: 'Sales Page Copy',
+      description: 'Paste this into your sales page in Kartra. Edit it to sound completely like you before publishing.',
+      content: S.salesContent
+    },
+    {
+      title: '5-Day Launch Plan',
+      description: 'Your personalised launch content — work through it day by day.',
+      content: S.launchContent
+    }
+  ].filter(a => a.content);
+
+  container.innerHTML = `
+    <div class="card card-pink" style="margin-bottom:20px;">
+      <p style="font-size:13px; font-weight:600; margin-bottom:4px;">How to use these</p>
+      <p style="font-size:13px; color:var(--text);">For each asset: click <strong>Copy</strong>, then click <strong>Open Google Doc</strong> to open a blank doc — paste straight in and save it to your Drive. Done.</p>
+    </div>
+    ${assets.map((a, i) => `
+    <div class="download-asset">
+      <div style="margin-bottom:10px;">
+        <h4 style="margin-bottom:4px;">${a.title}</h4>
+        <p style="font-size:12px; color:var(--text-soft);">${a.description}</p>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="copyAsset(${i}, this)">Copy content</button>
+        <a class="btn btn-outline btn-sm" href="https://docs.google.com/document/create" target="_blank">Open Google Doc →</a>
+      </div>
+      <div class="asset-content" id="asset-${i}">${a.content}</div>
+    </div>`).join('')}`;
+
+  markDone('download');
+  save();
+}
+
+function copyAsset(i, btn) {
+  const el = document.getElementById('asset-' + i);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.style.background = 'var(--success)';
+    btn.style.color = 'white';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 2500);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════
+function copyContent(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const text = el.innerText || el.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = el.nextElementSibling;
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = orig, 2000);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  goTo(S.currentScreen || 'welcome');
+});
+</script>
+</body>
+</html>
