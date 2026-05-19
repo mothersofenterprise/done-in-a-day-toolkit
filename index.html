@@ -1648,7 +1648,7 @@ Return ONLY a JSON array of exactly 12 ideas — the 12 that scored highest acro
   }
 ]`;
 
-    const result = await callClaude(prompt, '', 3000);
+    const result = await callClaude(prompt, '', 5000);
     const jsonMatch = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
     if (!jsonMatch) throw new Error('Could not parse ideas. Please try again.');
     let parsed = JSON.parse(jsonMatch[0]);
