@@ -1472,7 +1472,10 @@ function toggleSidebar() {
 // ═══════════════════════════════════════════════════════════════
 // CLAUDE API
 // ═══════════════════════════════════════════════════════════════
-async function callClaude(prompt, system = '', maxTokensOverride = null) {
+async function callClaude(prompt, system = '', maxTokensOverride = null, prefill = '') {
+  const messages = prefill
+    ? [{ role: 'user', content: prompt }, { role: 'assistant', content: prefill }]
+    : [{ role: 'user', content: prompt }];
   const res = await fetch('/api/claude', {
     method: 'POST',
     headers: {
@@ -1491,7 +1494,7 @@ CRITICAL WRITING RULES — these apply to every single word you write:
 5. Never make up data, reviews, testimonials, statistics, or results. If something needs a placeholder, label it clearly as a placeholder.
 6. Write like a real, knowledgeable person — warm, direct, specific, and honest. If you'd cringe saying it out loud to a friend, rewrite it.
 7. Keep all language beginner-friendly. No marketing jargon. If you use a term that needs explaining, explain it simply.`,
-      messages: [{ role: 'user', content: prompt }]
+      messages
     })
   });
   if (!res.ok) {
@@ -1500,7 +1503,7 @@ CRITICAL WRITING RULES — these apply to every single word you write:
   }
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
-  let fullText = '';
+  let fullText = prefill;
   let buffer = '';
   while (true) {
     const { done, value } = await reader.read();
@@ -1634,7 +1637,7 @@ SCORING (all must be 8+):
   }
 ]`;
 
-    const result = await callClaude(prompt, 'You output only raw JSON arrays. No explanation, no preamble, no markdown. Your entire response is valid JSON starting with [ and ending with ].', 5000);
+    const result = await callClaude(prompt, 'You output only raw JSON. No explanation, no preamble, no markdown.', 5000, '[');
     // Robust JSON extraction: strip code fences, then bracket-count to find the array
     const clean = result.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
     let jsonStr = null;
