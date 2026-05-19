@@ -1640,17 +1640,18 @@ SCORING (all must be 8+):
 ]`;
 
     const result = await callClaude(prompt, 'You output only raw JSON. No explanation, no preamble, no markdown.', 5000, '[');
-    // Robust JSON extraction: strip code fences, then bracket-count to find the array
+    // Extract JSON array: try parsing from each ] working backwards until we get a valid array
     const clean = result.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
-    let jsonStr = null;
-    let depth = 0, start = -1;
-    for (let i = 0; i < clean.length; i++) {
-      if (clean[i] === '[' && start === -1) { start = i; depth = 1; }
-      else if (start !== -1 && clean[i] === '[') depth++;
-      else if (start !== -1 && clean[i] === ']') { depth--; if (depth === 0) { jsonStr = clean.slice(start, i + 1); break; } }
+    const arrStart = clean.indexOf('[');
+    let parsed = null;
+    if (arrStart !== -1) {
+      for (let e = clean.length - 1; e > arrStart; e--) {
+        if (clean[e] === ']') {
+          try { const p = JSON.parse(clean.slice(arrStart, e + 1)); if (Array.isArray(p)) { parsed = p; break; } } catch(e2) {}
+        }
+      }
     }
-    if (!jsonStr) throw new Error('Got: ' + result.substring(0, 200));
-    let parsed = JSON.parse(jsonStr);
+    if (!parsed) throw new Error('Could not load ideas. Please try again.');
     // Client-side safety filter — remove anything that slipped through under 8 overall
     parsed = parsed.filter(idea => !idea.overallScore || idea.overallScore >= 8);
     // If somehow fewer than 6 survive, show all rather than leaving the screen empty
@@ -2285,12 +2286,13 @@ Return ONLY a JSON array of sections:
 
 Start with a quick-win intro. End with a clear action step. Maximum 7 sections unless the format truly demands more.`;
 
-    const result = await callClaude(prompt);
+    const result = await callClaude(prompt, '', 2000, '[');
     const _oc = result.replace(/```[\w]*\n?/g,'').replace(/```/g,'');
-    let _os=null,_od=0,_oi=-1;
-    for(let i=0;i<_oc.length;i++){if(_oc[i]==='['&&_oi===-1){_oi=i;_od=1;}else if(_oi!==-1&&_oc[i]==='[')_od++;else if(_oi!==-1&&_oc[i]===']'){_od--;if(_od===0){_os=_oc.slice(_oi,i+1);break;}}}
-    if (!_os) throw new Error('Could not parse outline. Please try again.');
-    S.outline = JSON.parse(_os);
+    const _oi = _oc.indexOf('[');
+    let S_outline_parsed = null;
+    if (_oi !== -1) { for (let e=_oc.length-1;e>_oi;e--) { if(_oc[e]===']'){try{const p=JSON.parse(_oc.slice(_oi,e+1));if(Array.isArray(p)){S_outline_parsed=p;break;}}catch(e2){}} } }
+    if (!S_outline_parsed) throw new Error('Could not parse outline. Please try again.');
+    S.outline = S_outline_parsed;
     S.outlineBuiltFor = S.chosenName;
     save();
     renderOutline();
@@ -2371,10 +2373,13 @@ Revise the outline based on this feedback. Keep what works, change what they've 
 IMPORTANT: Keep the product simple and digestible. Lean heavily towards fewer sections and faster consumption. Most digital products work best with 4–7 focused sections. Never overcomplicate.
 Return ONLY a JSON array:
 [{"title":"Section title","description":"1 sentence on what this covers","type":"intro/main content/action step/bonus"}]`;
-    const result = await callClaude(prompt);
-    const match = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
-    if (!match) throw new Error('Could not parse outline. Try again.');
-    S.outline = JSON.parse(match[0]);
+    const result = await callClaude(prompt, '', 2000, '[');
+    const _rc = result.replace(/```[\w]*\n?/g,'').replace(/```/g,'');
+    const _ri = _rc.indexOf('[');
+    let _rp = null;
+    if (_ri !== -1) { for (let e=_rc.length-1;e>_ri;e--) { if(_rc[e]===']'){try{const p=JSON.parse(_rc.slice(_ri,e+1));if(Array.isArray(p)){_rp=p;break;}}catch(e2){}} } }
+    if (!_rp) throw new Error('Could not parse outline. Try again.');
+    S.outline = _rp;
     save();
     renderOutline();
     hideLoading('outline-loading');
