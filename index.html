@@ -1649,13 +1649,21 @@ Return ONLY a JSON array of exactly 12 ideas — the 12 that scored highest acro
 ]`;
 
     const result = await callClaude(prompt, '', 5000);
-    const jsonMatch = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
-    if (!jsonMatch) throw new Error('Could not parse ideas. Please try again.');
-    let parsed = JSON.parse(jsonMatch[0]);
+    // Robust JSON extraction: strip code fences, then bracket-count to find the array
+    const clean = result.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
+    let jsonStr = null;
+    let depth = 0, start = -1;
+    for (let i = 0; i < clean.length; i++) {
+      if (clean[i] === '[' && start === -1) { start = i; depth = 1; }
+      else if (start !== -1 && clean[i] === '[') depth++;
+      else if (start !== -1 && clean[i] === ']') { depth--; if (depth === 0) { jsonStr = clean.slice(start, i + 1); break; } }
+    }
+    if (!jsonStr) throw new Error('Could not parse ideas. Please try again.');
+    let parsed = JSON.parse(jsonStr);
     // Client-side safety filter — remove anything that slipped through under 8 overall
     parsed = parsed.filter(idea => !idea.overallScore || idea.overallScore >= 8);
     // If somehow fewer than 6 survive, show all rather than leaving the screen empty
-    if (parsed.length < 6) parsed = JSON.parse(jsonMatch[0]);
+    if (parsed.length < 6) parsed = JSON.parse(jsonStr);
     S.productIdeas = parsed;
     S.selectedIdeas = [];
     // Pre-populate validationData from embedded scores so validation screen needs no API call
