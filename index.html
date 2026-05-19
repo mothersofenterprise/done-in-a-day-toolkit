@@ -2295,9 +2295,11 @@ Return ONLY a JSON array of sections:
 Start with a quick-win intro. End with a clear action step. Maximum 7 sections unless the format truly demands more.`;
 
     const result = await callClaude(prompt);
-    const jsonMatch = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
-    if (!jsonMatch) throw new Error('Could not parse outline. Please try again.');
-    S.outline = JSON.parse(jsonMatch[0]);
+    const _oc = result.replace(/```[\w]*\n?/g,'').replace(/```/g,'');
+    let _os=null,_od=0,_oi=-1;
+    for(let i=0;i<_oc.length;i++){if(_oc[i]==='['&&_oi===-1){_oi=i;_od=1;}else if(_oi!==-1&&_oc[i]==='[')_od++;else if(_oi!==-1&&_oc[i]===']'){_od--;if(_od===0){_os=_oc.slice(_oi,i+1);break;}}}
+    if (!_os) throw new Error('Could not parse outline. Please try again.');
+    S.outline = JSON.parse(_os);
     S.outlineBuiltFor = S.chosenName;
     save();
     renderOutline();
