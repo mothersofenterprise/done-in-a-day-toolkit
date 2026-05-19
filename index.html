@@ -1519,12 +1519,14 @@ CRITICAL WRITING RULES — these apply to every single word you write:
           const parsed = JSON.parse(data);
           if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
             fullText += parsed.delta.text;
+          } else if (parsed.type === 'error') {
+            throw new Error(parsed.error?.message || 'Stream error');
           }
-        } catch (e) {}
+        } catch (e) { if (e.message !== 'Stream error') {} else throw e; }
       }
     }
   }
-  if (!fullText) throw new Error('Something went wrong. Please try again.');
+  if (!fullText || fullText === prefill) throw new Error('Empty response. Please try again.');
   return fullText;
 }
 
@@ -1647,7 +1649,7 @@ SCORING (all must be 8+):
       else if (start !== -1 && clean[i] === '[') depth++;
       else if (start !== -1 && clean[i] === ']') { depth--; if (depth === 0) { jsonStr = clean.slice(start, i + 1); break; } }
     }
-    if (!jsonStr) throw new Error('Could not load ideas. Please try again.');
+    if (!jsonStr) throw new Error('Got: ' + result.substring(0, 200));
     let parsed = JSON.parse(jsonStr);
     // Client-side safety filter — remove anything that slipped through under 8 overall
     parsed = parsed.filter(idea => !idea.overallScore || idea.overallScore >= 8);
