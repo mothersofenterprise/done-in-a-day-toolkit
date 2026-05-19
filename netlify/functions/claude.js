@@ -44,16 +44,16 @@ exports.handler = async (event) => {
       const req = https.request(options, (res) => {
         console.log('Anthropic status:', res.statusCode);
         let data = '';
-        res.on('data', (chunk) => { data += chunk; });
+        res.on('data', chunk => data += chunk);
         res.on('end', () => resolve({ status: res.statusCode, body: data }));
       });
 
-      req.on('error', (error) => {
-        console.log('Request error:', error.message);
-        reject(error);
+      req.on('error', err => {
+        console.log('Request error:', err.message);
+        reject(err);
       });
 
-      req.setTimeout(25000, () => {
+      req.setTimeout(9000, () => {
         req.destroy();
         reject(new Error('Request timed out'));
       });
@@ -64,7 +64,10 @@ exports.handler = async (event) => {
 
     return {
       statusCode: result.status,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
       body: result.body
     };
 
