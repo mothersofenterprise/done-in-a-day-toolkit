@@ -1354,7 +1354,7 @@
 // ═══════════════════════════════════════════════════════════════
 const CONFIG = {
   model: 'claude-haiku-4-5-20251001',
-  maxTokens: 500
+  maxTokens: 2000
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -1473,7 +1473,7 @@ function toggleSidebar() {
 // CLAUDE API
 // ═══════════════════════════════════════════════════════════════
 async function callClaude(prompt, system = '', maxTokensOverride = null) {
-  const res = await fetch('/.netlify/functions/claude', {
+  const res = await fetch('/api/claude', {
     method: 'POST',
     headers: {
       'content-type': 'application/json'
