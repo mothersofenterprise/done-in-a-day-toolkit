@@ -1,6 +1,6 @@
-exports.handler = async (event) => {
-  console.log('Function called:', event.httpMethod);
+const https = require('https');
 
+exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -19,33 +19,53 @@ exports.handler = async (event) => {
 
   try {
     const body = JSON.parse(event.body);
-    console.log('Model:', body.model, 'Max tokens:', body.max_tokens);
-
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    console.log('API key present:', !!apiKey);
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: body.model,
-        max_tokens: body.max_tokens,
-        system: body.system,
-        messages: body.messages
-      })
+    const requestBody = JSON.stringify({
+      model: body.model,
+      max_tokens: body.max_tokens,
+      system: body.system,
+      messages: body.messages
     });
 
-    console.log('Anthropic response status:', response.status);
-    const data = await response.json();
+    const result = await new Promise((resolve, reject) => {
+      const options = {
+        hostname: 'api.anthropic.com',
+        path: '/v1/messages',
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'content-length': Buffer.byteLength(requestBody)
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        console.log('Anthropic status:', res.statusCode);
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => resolve({ status: res.statusCode, body: data }));
+      });
+
+      req.on('error', (error) => {
+        console.log('Request error:', error.message);
+        reject(error);
+      });
+
+      req.setTimeout(25000, () => {
+        req.destroy();
+        reject(new Error('Request timed out'));
+      });
+
+      req.write(requestBody);
+      req.end();
+    });
 
     return {
-      statusCode: response.status,
+      statusCode: result.status,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: result.body
     };
 
   } catch (error) {
