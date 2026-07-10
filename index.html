@@ -1152,7 +1152,7 @@
         <div class="platform-badge top-pick">⭐ My top pick</div>
         <h3>Kartra</h3>
       </div>
-      <p>I've been using Kartra since 2014. I've tried most of the alternatives and watched hundreds of women piece together cheaper tools, then move to Kartra anyway once they outgrow them. It's the one platform you'll never have to upgrade from.</p>
+      <p>I've been using Kartra since it launched in 2018. I've tried most of the alternatives and watched hundreds of women piece together cheaper tools, then move to Kartra anyway once they outgrow them. It's the one platform you'll never have to upgrade from.</p>
       <ul class="platform-feature-list">
         <li>Pages, funnels, email, checkouts, memberships, automations — all in one place</li>
         <li>No Zapier, no separate email tool, no monthly bill for 5 different subscriptions</li>
@@ -1169,8 +1169,9 @@
           <div class="plan-note">2,500 contacts · unlimited products</div>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="selectPlatform('kartra')">I'll use Kartra →</button>
-      <a class="btn btn-ghost btn-sm" href="https://try.kartra.com/hupnk0k1znyi" target="_blank" style="margin-top:4px; font-size:13px;">Sign up / try free for 14 days ↗</a>
+      <a class="btn btn-outline" href="https://try.kartra.com/hupnk0k1znyi" target="_blank">Start your 14-day free trial →</a>
+      <p style="font-size:11px; color:var(--text-soft); margin:4px 0 12px; text-align:center;">This is an affiliate link — it takes you directly to Kartra's website</p>
+      <button class="btn btn-primary" onclick="selectPlatform('kartra')">OK, let's move ahead with Kartra →</button>
     </div>
 
     <!-- SYSTEME.IO -->
@@ -1186,16 +1187,16 @@
         <li>Built for beginners, with plenty of tutorial videos to guide you</li>
         <li>Less powerful than Kartra as you scale, but a great first step</li>
       </ul>
-      <button class="btn btn-secondary" onclick="selectPlatform('systeme')">I'll use Systeme.io →</button>
-      <a class="btn btn-ghost btn-sm" href="https://systeme.io/?sa=sa0190435188258ddeddb44eb3004a39ba43a8db0f" target="_blank" style="margin-top:4px; font-size:13px;">Create your free account ↗</a>
+      <a class="btn btn-outline" href="https://systeme.io/?sa=sa0190435188258ddeddb44eb3004a39ba43a8db0f" target="_blank">Create your free Systeme.io account →</a>
+      <p style="font-size:11px; color:var(--text-soft); margin:4px 0 12px; text-align:center;">This is an affiliate link — it takes you directly to Systeme.io's website</p>
+      <button class="btn btn-secondary" onclick="selectPlatform('systeme')">OK, let's move ahead with Systeme.io →</button>
     </div>
 
   </div>
 
-  <p class="affiliate-disclosure">Both links above are affiliate links — I earn a small commission if you sign up, at no extra cost to you. I'm only ever sharing tools I genuinely believe in, and I earn either way, so my recommendation is always honest.</p>
-
-  <div class="btn-row mt-8">
-    <button class="btn btn-ghost" onclick="showOtherPlatform()">I already have a platform</button>
+  <div style="text-align:center; margin-top:24px; padding-top:24px; border-top:1px solid var(--border);">
+    <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">Already on a different platform?</p>
+    <button class="btn btn-outline" onclick="showOtherPlatform()">I already have a platform →</button>
   </div>
 
   <div id="other-platform-section" style="display:none;" class="card mt-16">
@@ -2552,7 +2553,7 @@ function renderCurrentSection() {
       <div class="btn-row" style="margin-top:20px;">
         ${currentSectionIndex > 0 ? `<button class="btn btn-ghost" onclick="switchSection(${currentSectionIndex-1})">← Previous</button>` : ''}
         ${!isLast ? `<button class="btn btn-secondary" onclick="saveAndNext()">Save and next section →</button>` : ''}
-        ${allDone ? `<button class="btn btn-primary" onclick="allSectionsDone()">All sections done — continue →</button>` : ''}
+        ${(isLast || allDone) ? `<button class="btn btn-primary" onclick="allSectionsDone()">I'm ready to continue →</button>` : ''}
       </div>
     </div>`;
 }
