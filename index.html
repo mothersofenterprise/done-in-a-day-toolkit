@@ -356,22 +356,44 @@
   .section-nav-btn.active { background: var(--pink); color: white; border-color: var(--pink); }
   .section-nav-btn.done { border-color: var(--success); color: var(--success); }
 
-  /* ── KARTRA SECTION ── */
-  .kartra-hero {
+  /* ── PLATFORM SECTION ── */
+  .platform-pick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .platform-pick-card {
+    border-radius: var(--radius); padding: 24px;
+    border: 2px solid var(--border); background: var(--white);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .platform-pick-card.recommended {
     background: linear-gradient(135deg, #225151 0%, #173838 100%);
-    border-radius: var(--radius); padding: 28px; margin-bottom: 16px; color: white;
+    border-color: #225151; color: white;
   }
-  .kartra-hero h3 { color: white; font-size: 18px; margin-bottom: 8px; }
-  .kartra-hero p { color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; }
-  .kartra-pricing-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .platform-pick-card.recommended h3 { color: white; }
+  .platform-pick-card.recommended p { color: rgba(255,255,255,0.82); }
+  .platform-pick-card h3 { font-size: 17px; margin: 0; }
+  .platform-pick-card p { font-size: 13px; line-height: 1.65; margin: 0; }
+  .platform-badge {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 4px;
+  }
+  .platform-badge.top-pick { background: var(--pink); color: white; }
+  .platform-badge.free-option { background: #e8f5e9; color: #2e7d32; }
+  .platform-feature-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .platform-feature-list li { font-size: 12.5px; display: flex; gap: 7px; align-items: flex-start; }
+  .platform-pick-card.recommended .platform-feature-list li { color: rgba(255,255,255,0.85); }
+  .platform-feature-list li::before { content: '✓'; font-weight: 700; color: var(--pink); flex-shrink: 0; }
+  .platform-pick-card.recommended .platform-feature-list li::before { color: #ff8882; }
+  .platform-pick-card .btn { margin-top: auto; }
+  .kartra-pricing-row { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
   .kartra-plan {
-    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 14px 18px;
-    border: 1px solid rgba(255,255,255,0.2); flex: 1; min-width: 140px;
+    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 14px;
+    border: 1px solid rgba(255,255,255,0.2); flex: 1; min-width: 120px;
   }
-  .kartra-plan.recommended { background: var(--pink); border-color: var(--pink); }
-  .kartra-plan .plan-name { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
-  .kartra-plan .plan-price { font-size: 22px; font-weight: 700; margin: 4px 0; }
-  .kartra-plan .plan-note { font-size: 11px; opacity: 0.7; }
+  .kartra-plan .plan-name { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9); }
+  .kartra-plan .plan-note { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 3px; }
   .affiliate-disclosure { font-size: 11px; color: var(--text-soft); margin-top: 12px; font-style: italic; }
 
   /* ── DOWNLOAD SCREEN ── */
@@ -417,6 +439,7 @@
     #main { margin-left: 0; padding: 20px 16px; }
     .idea-grid { grid-template-columns: 1fr; }
     .fork-cards { grid-template-columns: 1fr; }
+    .platform-pick-row { grid-template-columns: 1fr; }
     .kartra-pricing-row { flex-direction: column; }
     h1 { font-size: 24px; }
   }
@@ -1107,9 +1130,10 @@
     <div class="card">
       <div id="designContent" style="font-size:14px; line-height:1.8;"></div>
     </div>
-    <div class="btn-row mt-16">
-      <button class="btn btn-primary" onclick="goTo('m3-platform')">Next: Choose your platform →</button>
-    </div>
+  </div>
+
+  <div class="btn-row mt-16">
+    <button class="btn btn-primary" onclick="markDone('m3-design'); goTo('m3-platform')">I'm ready, next step →</button>
   </div>
 </div>
 
@@ -1120,30 +1144,57 @@
     <h1>Where will you sell this?</h1>
   </div>
 
-  <div class="kartra-hero">
-    <h3>My recommendation: Kartra</h3>
-    <p>I've been using Kartra since 2014. I've tried most of the alternatives and watched hundreds of women piece together cheaper tools — then move to Kartra anyway once they outgrow them. Kartra does everything in one place: pages, funnels, email, checkouts, memberships, automations. No Zapier. No separate email platform. No monthly bill for 5 different tools. Build for the business you want to have.</p>
-    <div class="kartra-pricing-row">
-      <div class="kartra-plan recommended">
-        <div class="plan-name">⭐ Essentials — where I'd start</div>
-        <div class="plan-note">500 contacts · 1 product · all the core tools to get going</div>
+  <div class="platform-pick-row">
+
+    <!-- KARTRA -->
+    <div class="platform-pick-card recommended">
+      <div>
+        <div class="platform-badge top-pick">⭐ My top pick</div>
+        <h3>Kartra</h3>
       </div>
-      <div class="kartra-plan">
-        <div class="plan-name">Starter — when you're ready to grow</div>
-        <div class="plan-note">2,500 contacts · unlimited products · 0% transaction fees</div>
+      <p>I've been using Kartra since 2014. I've tried most of the alternatives and watched hundreds of women piece together cheaper tools, then move to Kartra anyway once they outgrow them. It's the one platform you'll never have to upgrade from.</p>
+      <ul class="platform-feature-list">
+        <li>Pages, funnels, email, checkouts, memberships, automations — all in one place</li>
+        <li>No Zapier, no separate email tool, no monthly bill for 5 different subscriptions</li>
+        <li>Stronger checkout, slicker pages, real affiliate management built in</li>
+        <li>14-day free trial — no commitment to get started</li>
+      </ul>
+      <div class="kartra-pricing-row">
+        <div class="kartra-plan">
+          <div class="plan-name">⭐ Essentials — where I'd start</div>
+          <div class="plan-note">500 contacts · 1 product · all core tools</div>
+        </div>
+        <div class="kartra-plan">
+          <div class="plan-name">Starter — when you're growing</div>
+          <div class="plan-note">2,500 contacts · unlimited products</div>
+        </div>
       </div>
-      <div class="kartra-plan">
-        <div class="plan-name">Growth — for scaling</div>
-        <div class="plan-note">12,500 contacts · affiliates · advanced automations</div>
-      </div>
+      <button class="btn btn-primary" onclick="selectPlatform('kartra')">I'll use Kartra →</button>
+      <a class="btn btn-ghost btn-sm" href="https://try.kartra.com/hupnk0k1znyi" target="_blank" style="margin-top:4px; font-size:13px;">Sign up / try free for 14 days ↗</a>
     </div>
-    <p style="margin-top:14px; font-size:13px; color:rgba(255,255,255,0.7);">Start on Essentials and get your first product live. When your list grows or you want to add more products, upgrading takes two minutes. Build for where you are now — grow into the rest. Check Kartra's site for current pricing and any active offers.</p>
+
+    <!-- SYSTEME.IO -->
+    <div class="platform-pick-card">
+      <div>
+        <div class="platform-badge free-option">100% free to start</div>
+        <h3>Systeme.io</h3>
+      </div>
+      <p>If money is tight right now and you just want to get your first product live without a monthly bill, Systeme.io is a genuinely solid place to start. Free plan, no card needed, and it covers the basics beautifully.</p>
+      <ul class="platform-feature-list">
+        <li>Completely free plan — funnels, email, basic memberships included</li>
+        <li>No credit card needed to get started</li>
+        <li>Built for beginners, with plenty of tutorial videos to guide you</li>
+        <li>Less powerful than Kartra as you scale, but a great first step</li>
+      </ul>
+      <button class="btn btn-secondary" onclick="selectPlatform('systeme')">I'll use Systeme.io →</button>
+      <a class="btn btn-ghost btn-sm" href="https://systeme.io/?sa=sa0190435188258ddeddb44eb3004a39ba43a8db0f" target="_blank" style="margin-top:4px; font-size:13px;">Create your free account ↗</a>
+    </div>
+
   </div>
 
-  <p class="affiliate-disclosure">Disclosure: the link below is my affiliate link. I earn a small commission if you sign up, at no extra cost to you. I only recommend tools I use myself and believe in completely.</p>
+  <p class="affiliate-disclosure">Both links above are affiliate links — I earn a small commission if you sign up, at no extra cost to you. I'm only ever sharing tools I genuinely believe in, and I earn either way, so my recommendation is always honest.</p>
 
-  <div class="btn-row mt-16">
-    <a class="btn btn-primary" href="https://try.kartra.com/hupnk0k1znyi" target="_blank" onclick="selectPlatform('kartra')">Try Kartra free for 14 days →</a>
+  <div class="btn-row mt-8">
     <button class="btn btn-ghost" onclick="showOtherPlatform()">I already have a platform</button>
   </div>
 
@@ -1166,7 +1217,7 @@
   <div class="screen-header">
     <div class="screen-tag">Module 3 — Step 3</div>
     <h1>Welcome emails</h1>
-    <p class="screen-sub">Two emails, written in your brand voice, formatted ready to paste straight into Kartra.</p>
+    <p class="screen-sub">Two emails, written in your brand voice, formatted ready to paste straight into your email platform.</p>
   </div>
 
   <div id="emails-loading" class="loading" style="display:none">
@@ -3153,7 +3204,7 @@ function restorePlatformState() {
     showEl('other-platform-section');
     setVal('otherPlatformName', S.otherPlatform);
     showEl('platform-confirmed');
-  } else if (S.platformChoice === 'kartra') {
+  } else if (S.platformChoice === 'kartra' || S.platformChoice === 'systeme') {
     showEl('platform-confirmed');
   }
 }
@@ -3166,7 +3217,7 @@ async function generateListing() {
   clearError('listing-error');
   showLoading('listing-loading');
 
-  const platform = S.platformChoice === 'kartra' ? 'Kartra' : (S.otherPlatform || 'their sales platform');
+  const platform = S.platformChoice === 'kartra' ? 'Kartra' : S.platformChoice === 'systeme' ? 'Systeme.io' : (S.otherPlatform || 'their sales platform');
 
   try {
     const outlineSummary = S.outline.map((s, i) => `• ${s.title}`).join('\n');
@@ -3279,12 +3330,10 @@ function showEmailsOutput() {
 
   const tip = document.getElementById('emails-paste-tip');
   if (tip) {
-    const platform = S.platformChoice === 'kartra'
-      ? "Kartra"
-      : (S.otherPlatform || 'your email platform');
-    const isKartra = S.platformChoice === 'kartra';
-    tip.textContent = isKartra
-      ? 'These are formatted with <br><br> between paragraphs — paste into Kartra\'s HTML/Source view.'
+    const platform = S.platformChoice === 'kartra' ? 'Kartra' : S.platformChoice === 'systeme' ? 'Systeme.io' : (S.otherPlatform || 'your email platform');
+    const isKartraOrSysteme = S.platformChoice === 'kartra' || S.platformChoice === 'systeme';
+    tip.textContent = isKartraOrSysteme
+      ? `These are formatted with <br><br> between paragraphs — paste into ${platform}'s HTML/Source view for the cleanest result.`
       : `These are formatted with line breaks between paragraphs — paste into ${platform}'s email editor. If your platform has an HTML view, use that for the cleanest result.`;
   }
 
@@ -3703,12 +3752,12 @@ function renderDownloadAssets() {
     },
     {
       title: 'Welcome Emails',
-      description: 'Paste each email into Kartra\'s email editor (HTML/Source view) — the formatting is already set up for you.',
+      description: 'Paste each email into your email platform\'s HTML/Source view — the formatting is already set up for you.',
       content: S.emailsContent
     },
     {
       title: 'Sales Page Copy',
-      description: 'Paste this into your sales page in Kartra. Edit it to sound completely like you before publishing.',
+      description: 'Paste this into your sales page. Edit it to sound completely like you before publishing.',
       content: S.salesContent
     },
     {
