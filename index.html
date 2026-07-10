@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
   :root {
     --pink: #ef1970;
@@ -1360,7 +1361,12 @@
     <p style="font-size:14px; line-height:1.8; color:var(--text); margin-bottom:14px;">This might sound cheesy, but I'm SO proud of you. Too many women make excuses for not chasing their dreams — but not you, not today.</p>
     <p style="font-size:14px; line-height:1.8; color:var(--text); margin-bottom:14px;">I pray this has lit a fire in your belly to build a truly remarkable and profitable digital product business that serves you and your family in ways you can't even imagine right now.</p>
     <p style="font-size:15px; font-weight:700; color:var(--pink);">Well done lovely. Now let's get it out into the world.</p>
-    <p style="font-size:13px; color:var(--text-soft); margin-top:16px;">Everything you've built is below. Copy each asset and use it today.</p>
+    <div style="margin-top:24px;">
+      <button id="declare-done-btn" class="btn btn-primary btn-lg" onclick="declareDone()" style="font-size:16px; padding:16px 32px; letter-spacing:0.01em;">
+        🎉 I declare my digital product DONE!
+      </button>
+    </div>
+    <p style="font-size:13px; color:var(--text-soft); margin-top:20px;">Everything you've built is below. Copy each asset and use it today.</p>
   </div>
 
   <div class="card" style="margin-bottom:20px;">
@@ -3789,6 +3795,27 @@ function copyAsset(i, btn) {
       btn.style.color = '';
     }, 2500);
   });
+}
+
+function declareDone() {
+  markDone('download');
+  const btn = document.getElementById('declare-done-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '✓ Done declared!';
+    btn.style.background = 'var(--teal)';
+  }
+  // First burst — centre
+  confetti({ particleCount: 180, spread: 100, origin: { x: 0.5, y: 0.55 } });
+  // Side cannons
+  setTimeout(() => {
+    confetti({ particleCount: 120, angle: 60, spread: 65, origin: { x: 0, y: 0.6 } });
+    confetti({ particleCount: 120, angle: 120, spread: 65, origin: { x: 1, y: 0.6 } });
+  }, 280);
+  // Final shower
+  setTimeout(() => {
+    confetti({ particleCount: 80, spread: 120, origin: { x: 0.5, y: 0.3 }, gravity: 0.8 });
+  }, 600);
 }
 
 // ═══════════════════════════════════════════════════════════════
