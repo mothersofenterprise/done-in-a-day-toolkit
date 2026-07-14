@@ -228,9 +228,10 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
   <div class="screen" id="s-q4b">
     <div class="progress"><span style="width:74%"></span></div>
     <button class="back" onclick="go('s-q4')">&larr; Back</button>
-    <div class="qlabel">And how do you mainly work with people right now?</div>
-    <div class="helper">So your Map reflects your actual business, not a guess.</div>
+    <div class="qlabel">And how do you work with people right now?</div>
+    <div class="helper">Pick as many as apply, so your Map reflects your actual business, not a guess.</div>
     <div class="cards" id="deliveryCards"></div>
+    <button class="btn" id="btnQ4b" onclick="submitDelivery()" disabled>Next</button>
   </div>
 
   <!-- Q5 GOAL -->
@@ -390,7 +391,7 @@ const CONFIG = {
 // STATE
 // ================================================================
 const S = {
-  name:'', hours:'', pockets:[], stage:0, raw:'', delivery:'', goal:0, meaning:'',
+  name:'', hours:'', pockets:[], stage:0, raw:'', delivery:[], goal:0, meaning:'',
   calcPrice:47, calcSales:7, cur:'£'
 };
 
@@ -472,23 +473,28 @@ function submitRaw(){
   const v=document.getElementById('inRaw').value.trim();
   if(!v){ document.getElementById('errRaw').style.display='block'; return; }
   S.raw=v;
-  if(S.stage>=3){ go('s-q4b'); } else { S.delivery=''; go('s-q5'); }
+  if(S.stage>=3){ go('s-q4b'); } else { S.delivery=[]; go('s-q5'); }
 }
 
-// Q4b delivery model (stages 3 and 4 only)
+// Q4b delivery model (stages 3 and 4 only, multi-select)
 const DELIVERY = [
   '1:1 (coaching, consulting, appointments)',
   'Done-for-you services (I do the work for them)',
   'Group programmes or a membership',
-  'Digital products (courses, templates, downloads)',
-  'A proper mix of these'
+  'Digital products (courses, templates, downloads)'
 ];
 DELIVERY.forEach(d=>{
   const b=document.createElement('button');
   b.className='card-opt'; b.textContent=d;
-  b.onclick=()=>{ S.delivery=d; go('s-q5'); };
+  b.onclick=()=>{
+    b.classList.toggle('selected');
+    const i=S.delivery.indexOf(d);
+    if(i>-1) S.delivery.splice(i,1); else S.delivery.push(d);
+    document.getElementById('btnQ4b').disabled = S.delivery.length===0;
+  };
   document.getElementById('deliveryCards').appendChild(b);
 });
+function submitDelivery(){ if(S.delivery.length) go('s-q5'); }
 function backFromQ5(){ go(S.stage>=3?'s-q4b':'s-q4'); }
 
 // Q5 currency + goal
@@ -595,7 +601,7 @@ function updateCalc(){
   const n=salesNeeded(S.calcPrice);
   let line='To reach your <b>'+esc(S.cur)+fmt(S.goal)+' a month</b> at '+esc(S.cur)+S.calcPrice+', that’s <b>'+n+' sales a week</b>. Not thousands of followers. '+n+' sales.';
   if(S.stage===4){
-    const timeBound = S.delivery.indexOf('1:1')===0 || S.delivery.indexOf('Done-for-you')===0 || S.delivery.indexOf('A proper mix')===0;
+    const timeBound = S.delivery.some(d=>d.indexOf('1:1')===0||d.indexOf('Done-for-you')===0);
     line += timeBound
       ? ' And not one of them needs an appointment slot.'
       : ' And every one of them can land while you’re doing something else entirely.';
@@ -723,7 +729,7 @@ function buildPrompt(){
 Her name: ${S.name}
 Hours available each week: ${S.hours}
 Where her time pockets appear: ${S.pockets.join(', ')}
-Her situation: ${g.label}${S.delivery?'\nHow she currently works with people: '+S.delivery+'. Build "week", "sittingOn" and "gap" around this actual delivery model. Never assume one-to-one work, appointments, or client calls unless that matches what she said. If she already sells digital products, she is not starting from zero: frame this as upgrading and systemising what she has, never as her first product.':''}
+Her situation: ${g.label}${S.delivery.length?'\nHow she currently works with people (may be several at once): '+S.delivery.join(' + ')+'. Build "week", "sittingOn" and "gap" around this actual delivery model. Never assume one-to-one work, appointments, or client calls unless that matches what she said. If she already sells digital products, she is not starting from zero: frame this as upgrading and systemising what she has, never as her first product.':''}
 In her own words about what she does / what people come to her for: "${S.raw}"
 Her currency symbol: ${S.cur}
 Her income goal: ${S.cur}${fmt(S.goal)} extra a month.${S.meaning?'\nWhat that money would do for her, in her own words: "'+S.meaning+'"':''}
