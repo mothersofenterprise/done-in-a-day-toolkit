@@ -1,81 +1,12 @@
-const https = require('https');
-
-exports.handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      },
-      body: ''
-    };
-  }
-
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method not allowed' };
-  }
-
-  try {
-    const body = JSON.parse(event.body);
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-
-    const requestBody = JSON.stringify({
-      model: body.model,
-      max_tokens: body.max_tokens,
-      system: body.system,
-      messages: body.messages
-    });
-
-    const result = await new Promise((resolve, reject) => {
-      const options = {
-        hostname: 'api.anthropic.com',
-        path: '/v1/messages',
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-          'content-length': Buffer.byteLength(requestBody)
-        }
-      };
-
-      const req = https.request(options, (res) => {
-        console.log('Anthropic status:', res.statusCode);
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => resolve({ status: res.statusCode, body: data }));
-      });
-
-      req.on('error', err => {
-        console.log('Request error:', err.message);
-        reject(err);
-      });
-
-      req.setTimeout(55000, () => {
-        req.destroy();
-        reject(new Error('Request timed out'));
-      });
-
-      req.write(requestBody);
-      req.end();
-    });
-
-    return {
-      statusCode: result.status,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: result.body
-    };
-
-  } catch (error) {
-    console.log('Error:', error.message);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: { message: error.message } })
-    };
-  }
+// RETIRED - this old endpoint is permanently switched off.
+// It used to pass any request through to the Anthropic API with no
+// model or size limits, which was a cost and security risk.
+// Everything now goes through the protected edge function at /api/claude
+// (see netlify/edge-functions/claude.js).
+exports.handler = async () => {
+  return {
+    statusCode: 410,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ error: { message: 'This endpoint has been retired.' } })
+  };
 };
