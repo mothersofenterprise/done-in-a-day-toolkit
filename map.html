@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Family-First Business Map | Mothers of Enterprise</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#225151;
+  --pink:#ef1970;
+  --cream:#fbf8f2;
+  --blush:#f1d2cb;
+  --coral:#ff8882;
+  --white:#ffffff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--cream);
+  color:var(--teal);
+  font-family:'Raleway',sans-serif;
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:660px;margin:0 auto;padding:32px 20px 64px}
+.screen{display:none;animation:fade .35s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.eyebrow{
+  font-size:12px;letter-spacing:3px;text-transform:uppercase;
+  font-weight:600;color:var(--pink);text-align:center;margin-bottom:14px;
+}
+h1,h2{font-family:'Libre Baskerville',serif;font-weight:700;line-height:1.25}
+h1{font-size:30px;text-align:center;margin-bottom:14px}
+h2{font-size:23px;margin-bottom:12px}
+.sub{text-align:center;max-width:520px;margin:0 auto 26px;color:var(--teal)}
+.qlabel{font-family:'Libre Baskerville',serif;font-size:22px;font-weight:700;text-align:center;margin-bottom:8px}
+.helper{text-align:center;font-size:15px;color:#4d6f6f;margin-bottom:22px}
+.note{text-align:center;font-size:14px;font-style:italic;color:#4d6f6f;margin-top:18px}
+
+.progress{height:5px;background:var(--blush);border-radius:99px;margin-bottom:34px;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--pink);border-radius:99px;transition:width .3s ease}
+
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.chip{
+  border:2px solid var(--blush);background:var(--white);color:var(--teal);
+  border-radius:99px;padding:12px 22px;font-family:'Raleway',sans-serif;
+  font-size:16px;font-weight:600;cursor:pointer;transition:all .15s ease;
+}
+.chip:hover{border-color:var(--coral)}
+.chip.selected{background:var(--teal);border-color:var(--teal);color:var(--cream)}
+
+.cards{display:flex;flex-direction:column;gap:12px}
+.card-opt{
+  border:2px solid var(--blush);background:var(--white);color:var(--teal);
+  border-radius:14px;padding:16px 20px;font-size:16px;font-weight:500;
+  text-align:left;cursor:pointer;transition:all .15s ease;font-family:'Raleway',sans-serif;line-height:1.45;
+}
+.card-opt:hover{border-color:var(--coral)}
+.card-opt.selected{border-color:var(--pink);background:#fdeef4}
+
+input[type=text],textarea{
+  width:100%;border:2px solid var(--blush);border-radius:14px;background:var(--white);
+  padding:14px 16px;font-family:'Raleway',sans-serif;font-size:17px;color:var(--teal);outline:none;
+}
+input[type=text]:focus,textarea:focus{border-color:var(--coral)}
+select.cur-select{
+  display:block;max-width:340px;margin:0 auto;width:100%;
+  border:2px solid var(--blush);border-radius:14px;background:var(--white);
+  padding:13px 16px;font-family:'Raleway',sans-serif;font-size:16px;font-weight:600;
+  color:var(--teal);outline:none;cursor:pointer;
+}
+select.cur-select:focus{border-color:var(--coral)}
+textarea{min-height:96px;resize:vertical}
+.center-input{max-width:340px;margin:0 auto;display:block}
+
+.btn{
+  display:block;margin:30px auto 0;background:var(--pink);color:#fff;border:none;
+  border-radius:99px;padding:16px 40px;font-family:'Raleway',sans-serif;
+  font-size:17px;font-weight:700;letter-spacing:.4px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(239,25,112,.28)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{background:var(--teal)}
+.skip{display:block;text-align:center;margin-top:16px;color:#4d6f6f;font-size:14px;text-decoration:underline;cursor:pointer;background:none;border:none;font-family:'Raleway',sans-serif}
+.back{background:none;border:none;color:#4d6f6f;font-size:14px;cursor:pointer;font-family:'Raleway',sans-serif;text-decoration:underline;margin-bottom:18px}
+.err{display:none;color:var(--pink);font-weight:600;text-align:center;margin-top:14px}
+
+/* calculator */
+.calc-box{background:var(--white);border:2px solid var(--blush);border-radius:18px;padding:26px 22px;margin-top:8px}
+.calc-row{margin-bottom:22px}
+.calc-row .lbl{font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--teal);margin-bottom:10px;text-align:center}
+.big-num{font-family:'Libre Baskerville',serif;font-size:42px;font-weight:700;color:var(--pink);text-align:center;line-height:1.1}
+.big-num small{display:block;font-family:'Raleway',sans-serif;font-size:14px;font-weight:600;color:var(--teal);letter-spacing:2px;text-transform:uppercase;margin-top:6px}
+input[type=range]{width:100%;accent-color:var(--pink);height:34px}
+.slider-val{text-align:center;font-weight:700;margin-top:2px}
+.goal-line{
+  background:var(--teal);color:var(--cream);border-radius:14px;
+  padding:18px 20px;margin-top:22px;font-size:16.5px;line-height:1.55;text-align:center;
+}
+.goal-line b{color:#ffd3e3}
+.projection{font-size:13.5px;font-style:italic;color:#4d6f6f;text-align:center;margin-top:14px}
+
+/* loading */
+.loadbox{text-align:center;padding:70px 0}
+.spinner{width:44px;height:44px;border:4px solid var(--blush);border-top-color:var(--pink);border-radius:50%;margin:0 auto 26px;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadMsg{font-family:'Libre Baskerville',serif;font-size:19px}
+
+/* map */
+.map-section{background:var(--white);border:2px solid var(--blush);border-radius:18px;padding:26px 24px;margin-bottom:18px}
+.map-section h3{
+  font-family:'Libre Baskerville',serif;font-size:19px;color:var(--pink);margin-bottom:12px;
+}
+.map-section p{margin-bottom:12px}
+.map-section p:last-child{margin-bottom:0}
+.income-goal{font-family:'Libre Baskerville',serif;font-size:20px;margin-bottom:12px}
+.income-rows{list-style:none;margin:0 0 14px}
+.income-rows li{padding:9px 0;border-bottom:1px solid var(--cream);font-size:16px}
+.income-rows li:last-child{border-bottom:none}
+.income-rows b{color:var(--pink)}
+.pillar{padding:12px 0;border-bottom:1px solid var(--cream)}
+.pillar:last-child{border-bottom:none}
+.pillar .p-name{font-weight:700;color:var(--teal)}
+.cta-card{background:var(--teal);border-radius:18px;padding:32px 26px;text-align:center;color:var(--cream);margin-top:8px}
+.cta-card h3{font-family:'Libre Baskerville',serif;font-size:24px;color:#fff;margin-bottom:12px;line-height:1.3}
+.cta-card p{margin-bottom:6px;color:var(--blush)}
+.cta-card .doors{font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--coral);margin-top:10px}
+.cta-btn{
+  display:inline-block;margin-top:20px;background:var(--pink);color:#fff;text-decoration:none;
+  border-radius:99px;padding:16px 38px;font-weight:700;font-size:17px;transition:transform .12s ease;
+}
+.cta-btn:hover{transform:translateY(-1px)}
+.map-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.map-actions .btn{margin:0}
+.footer{text-align:center;margin-top:44px;font-size:13px;color:#4d6f6f;letter-spacing:1px}
+.footer b{font-family:'Libre Baskerville',serif;letter-spacing:0}
+
+@media(max-width:480px){
+  h1{font-size:25px}
+  .qlabel{font-size:19px}
+  .big-num{font-size:34px}
+}
+@media print{
+  body{background:#fff}
+  .no-print{display:none !important}
+  .map-section{border-color:#ddd;break-inside:avoid}
+  .cta-card{background:#fff;border:2px solid #ddd}
+  .cta-card h3,.cta-card p{color:var(--teal)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- WELCOME -->
+  <div class="screen active" id="s-welcome">
+    <div class="eyebrow">The Family-First Business Map</div>
+    <h1>Let's map your business, mama.</h1>
+    <p class="sub">6 quick questions, about 3 minutes. At the end you'll have a personalised map showing how digital products fit into the life (and business) you already have, what they could realistically earn you, and what to build first.</p>
+    <label class="qlabel" for="inName" style="font-size:18px">First things first, what's your name?</label>
+    <input type="text" id="inName" class="center-input" placeholder="Your first name" maxlength="30" style="margin-top:14px">
+    <button class="btn" onclick="startMap()">Start my Map</button>
+    <div class="err" id="errName">Pop your name in first, lovely.</div>
+  </div>
+
+  <!-- Q1 HOURS -->
+  <div class="screen" id="s-q1">
+    <div class="progress"><span style="width:16%"></span></div>
+    <div class="qlabel">How many hours could you give your business each week?</div>
+    <div class="helper">Be honest, not heroic. The Map works with what's true.</div>
+    <div class="chips" id="hoursChips"></div>
+    <p class="note">Even 3 focused hours a week is enough to start when you have the right plan.</p>
+  </div>
+
+  <!-- Q2 POCKETS -->
+  <div class="screen" id="s-q2">
+    <div class="progress"><span style="width:33%"></span></div>
+    <button class="back" onclick="go('s-q1')">&larr; Back</button>
+    <div class="qlabel">Where do those pockets of time appear?</div>
+    <div class="helper">Pick as many as you like.</div>
+    <div class="chips" id="pocketChips"></div>
+    <button class="btn" id="btnQ2" onclick="submitPockets()" disabled>Next</button>
+  </div>
+
+  <!-- Q3 STAGE -->
+  <div class="screen" id="s-q3">
+    <div class="progress"><span style="width:50%"></span></div>
+    <button class="back" onclick="go('s-q2')">&larr; Back</button>
+    <div class="qlabel">Where are you right now?</div>
+    <div class="helper">Pick the one that sounds most like you.</div>
+    <div class="cards" id="stageCards"></div>
+  </div>
+
+  <!-- Q4 RAW MATERIAL -->
+  <div class="screen" id="s-q4">
+    <div class="progress"><span style="width:66%"></span></div>
+    <button class="back" onclick="go('s-q3')">&larr; Back</button>
+    <div class="qlabel" id="q4Label"></div>
+    <div class="helper" id="q4Helper"></div>
+    <textarea id="inRaw" maxlength="400"></textarea>
+    <button class="btn" onclick="submitRaw()">Next</button>
+    <div class="err" id="errRaw">A few words here and your Map gets so much better.</div>
+  </div>
+
+  <!-- Q5 GOAL -->
+  <div class="screen" id="s-q5">
+    <div class="progress"><span style="width:83%"></span></div>
+    <button class="back" onclick="go('s-q4')">&larr; Back</button>
+    <div class="qlabel">What extra monthly income would change things for your family?</div>
+    <div class="helper">There's no wrong answer. This becomes the target your Map is built around.</div>
+    <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:700;text-align:center;margin-bottom:10px">Your currency</div>
+    <select class="cur-select" id="curSelect" style="margin-bottom:22px"></select>
+    <div class="chips" id="goalChips"></div>
+    <input type="text" id="inGoalCustom" class="center-input" placeholder="Or type your own number" inputmode="numeric" style="margin-top:18px">
+    <button class="btn" onclick="submitGoal()">Next</button>
+    <div class="err" id="errGoal">Pick a number or type your own.</div>
+  </div>
+
+  <!-- Q6 MEANING -->
+  <div class="screen" id="s-q6">
+    <div class="progress"><span style="width:100%"></span></div>
+    <button class="back" onclick="go('s-q5')">&larr; Back</button>
+    <div class="qlabel">And what would that money actually do for you?</div>
+    <div class="helper">One line is plenty. It goes into your Map, in your own words.</div>
+    <textarea id="inMeaning" maxlength="300" placeholder="e.g. cover the mortgage, replace my old salary, breathe a bit easier every month"></textarea>
+    <button class="btn" onclick="submitMeaning(false)">Next</button>
+    <button class="skip" onclick="submitMeaning(true)">Skip this one</button>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="screen" id="s-calc">
+    <button class="back" onclick="go('s-q6')">&larr; Back</button>
+    <h2 style="text-align:center">Let's take the guesswork out.</h2>
+    <p class="sub" style="margin-bottom:22px">Slide the numbers around. This is what consistent, small sales add up to.</p>
+    <div class="calc-box">
+      <div class="calc-row">
+        <div class="lbl">Example product price</div>
+        <div class="chips" id="priceChips"></div>
+        <input type="text" id="inPriceCustom" class="center-input" placeholder="Or your own price" inputmode="numeric" style="margin-top:14px;max-width:240px">
+      </div>
+      <div class="calc-row">
+        <div class="lbl">Sales per week</div>
+        <input type="range" id="salesSlider" min="1" max="60" value="7" oninput="updateCalc()">
+        <div class="slider-val" id="salesVal">7 sales a week</div>
+      </div>
+      <div class="big-num" id="calcMonthly">&pound;1,316<small>a month</small></div>
+      <div class="goal-line" id="goalLine"></div>
+      <div class="projection">These numbers are projections at example prices, not promises. Your real price comes later, when your product exists. Monthly figures use 4 weeks a month, so real months pay slightly more.</div>
+    </div>
+    <button class="btn" onclick="generateMap()">Build my Map</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="screen" id="s-loading">
+    <div class="loadbox">
+      <div class="spinner"></div>
+      <div id="loadMsg">Mapping your week...</div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="screen" id="s-error">
+    <div class="loadbox">
+      <div class="qlabel">Hmm, that didn't quite work.</div>
+      <div class="helper" id="errHelper">Nothing you did wrong. Give it another go.</div>
+      <button class="btn" onclick="generateMap()">Try again</button>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="screen" id="s-map">
+    <div class="eyebrow">The Family-First Business Map</div>
+    <h1 id="mapTitle"></h1>
+    <p class="sub" id="mapIntro"></p>
+
+    <div class="map-section">
+      <h3>Your Week</h3>
+      <div id="secWeek"></div>
+    </div>
+
+    <div class="map-section">
+      <h3>Your Income Map</h3>
+      <div class="income-goal" id="incomeGoal"></div>
+      <ul class="income-rows" id="incomeRows"></ul>
+      <div id="secIncome"></div>
+      <p style="font-size:13.5px;font-style:italic;color:#4d6f6f;margin-top:12px">Projections at example prices, not promises. Your real price comes when your product exists.</p>
+    </div>
+
+    <div class="map-section">
+      <h3>What You're Sitting On</h3>
+      <div id="secSitting"></div>
+    </div>
+
+    <div class="map-section">
+      <h3>Your Momentum Plan</h3>
+      <div id="secMomentum"></div>
+    </div>
+
+    <div class="map-section">
+      <h3>The Gap</h3>
+      <div id="secGap"></div>
+    </div>
+
+    <div class="cta-card" id="ctaCard"></div>
+
+    <div class="map-actions no-print">
+      <button class="btn btn-secondary" onclick="window.print()">Save my Map</button>
+      <button class="btn" onclick="location.reload()">Start again</button>
+    </div>
+
+    <div class="footer">With love and belief, <b>Suzy XO</b><br>Mothers of Enterprise&reg;</div>
+  </div>
+
+</div>
+
+<script>
+// ================================================================
+// CONFIG - the bits Suzy may want to change
+// ================================================================
+const CONFIG = {
+  model: 'claude-haiku-4-5-20251001',
+  maxTokens: 2500,
+
+  // THE SEPTEMBER SWITCH:
+  // true  = stages 2, 3 and 4 route to the Automated Summer Sales Machine
+  // false = everyone routes to Done In A Day (flip this when doors close early September)
+  summerMachineActive: true,
+
+  offers: {
+    diad: {
+      name: 'The Done In A Day Digital Product AI Toolkit',
+      url: 'https://www.haveitallacademy.com/digitalproduct',
+      headline: 'Your map is drawn. Now you need the product.',
+      body: 'The Done In A Day Digital Product AI Toolkit walks you through finding your winning product idea, pricing it with confidence, and creating the whole thing with simple AI tools. In less than a day.',
+      doors: '',
+      button: 'Show me Done In A Day'
+    },
+    ssm: {
+      name: 'The Automated Summer Sales Machine',
+      url: 'https://www.haveitallacademy.com/automated-sales',
+      headline: 'Your map is drawn. Now let’s build the machine.',
+      body: 'The Automated Summer Sales Machine is the product toolkit, the funnel and the automation training in one. Build it once and it keeps selling while you live your life.',
+      doors: 'Doors close early September',
+      button: 'Show me the Summer Sales Machine'
+    }
+  }
+};
+
+// ================================================================
+// STATE
+// ================================================================
+const S = {
+  name:'', hours:'', pockets:[], stage:0, raw:'', goal:0, meaning:'',
+  calcPrice:47, calcSales:7, cur:'£'
+};
+
+const HOURS = ['1–3 hours','4–6 hours','7–10 hours','10+ hours'];
+const POCKETS = ['School mornings','Nap times','Evenings','Lunch breaks','It changes every week (mama life, I get it)'];
+const STAGES = [
+  'I don’t know what I’d sell yet',
+  'I have an idea, but I can’t seem to get to launch',
+  'I’m selling, but it’s patchy and I feel like I’m “trying all the things”',
+  'My business works, but it’s maxed out my time'
+];
+const GOALS = [500,1000,2500,5000];
+const PRICES = [27,47,97];
+
+// ================================================================
+// SCREEN FLOW
+// ================================================================
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function startMap(){
+  const n = document.getElementById('inName').value.trim();
+  if(!n){ document.getElementById('errName').style.display='block'; return; }
+  S.name = n.charAt(0).toUpperCase()+n.slice(1);
+  go('s-q1');
+}
+
+// Q1 hours
+HOURS.forEach(h=>{
+  const b=document.createElement('button');
+  b.className='chip'; b.textContent=h;
+  b.onclick=()=>{ S.hours=h; go('s-q2'); };
+  document.getElementById('hoursChips').appendChild(b);
+});
+
+// Q2 pockets (multi)
+POCKETS.forEach(p=>{
+  const b=document.createElement('button');
+  b.className='chip'; b.textContent=p;
+  b.onclick=()=>{
+    b.classList.toggle('selected');
+    const i=S.pockets.indexOf(p);
+    if(i>-1) S.pockets.splice(i,1); else S.pockets.push(p);
+    document.getElementById('btnQ2').disabled = S.pockets.length===0;
+  };
+  document.getElementById('pocketChips').appendChild(b);
+});
+function submitPockets(){ if(S.pockets.length) go('s-q3'); }
+
+// Q3 stage
+STAGES.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='card-opt'; b.textContent=s;
+  b.onclick=()=>{ S.stage=i+1; setQ4(); go('s-q4'); };
+  document.getElementById('stageCards').appendChild(b);
+});
+
+// Q4 dynamic
+function setQ4(){
+  const L=document.getElementById('q4Label'), H=document.getElementById('q4Helper'), T=document.getElementById('inRaw');
+  if(S.stage===3){
+    L.textContent='What are you selling right now, and who buys it?';
+    H.textContent='A sentence is plenty.';
+    T.placeholder='e.g. custom cake orders, mostly local parents for birthdays';
+  } else if(S.stage===4){
+    L.textContent='What does your business do, and what eats most of your time?';
+    H.textContent='A sentence is plenty.';
+    T.placeholder='e.g. I’m a bookkeeper with full client books, month-end swallows me whole';
+  } else {
+    L.textContent='What do people always come to you for?';
+    H.textContent='Your work background, your skills, the thing friends ask your help with. A few words is plenty.';
+    T.placeholder='e.g. meal planning, organising chaos, ten years in early years teaching';
+  }
+}
+function submitRaw(){
+  const v=document.getElementById('inRaw').value.trim();
+  if(!v){ document.getElementById('errRaw').style.display='block'; return; }
+  S.raw=v; go('s-q5');
+}
+
+// Q5 currency + goal
+const CURRENCIES=[
+  ['£','British Pound (GBP)'],
+  ['$','US Dollar (USD)'],
+  ['€','Euro (EUR)'],
+  ['CA$','Canadian Dollar (CAD)'],
+  ['A$','Australian Dollar (AUD)'],
+  ['NZ$','New Zealand Dollar (NZD)'],
+  ['R','South African Rand (ZAR)'],
+  ['CHF ','Swiss Franc (CHF)'],
+  ['kr ','Swedish Krona (SEK)'],
+  ['kr ','Norwegian Krone (NOK)'],
+  ['kr ','Danish Krone (DKK)'],
+  ['AED ','UAE Dirham (AED)'],
+  ['S$','Singapore Dollar (SGD)'],
+  ['₹','Indian Rupee (INR)'],
+  ['¥','Japanese Yen (JPY)']
+];
+(function(){
+  const sel=document.getElementById('curSelect');
+  CURRENCIES.forEach(([sym,label],i)=>{
+    const o=document.createElement('option');
+    o.value=i; o.textContent=sym.trim()+' '+label;
+    sel.appendChild(o);
+  });
+  sel.value=0;
+  sel.addEventListener('change',()=>{
+    S.cur=CURRENCIES[parseInt(sel.value,10)][0];
+    renderGoalChips();
+  });
+})();
+function renderGoalChips(){
+  const gc=document.getElementById('goalChips');
+  gc.innerHTML='';
+  GOALS.forEach(g=>{
+    const b=document.createElement('button');
+    b.className='chip'+(S.goal===g?' selected':'');
+    b.textContent=S.cur+g.toLocaleString('en-GB');
+    b.onclick=()=>{
+      document.querySelectorAll('#goalChips .chip').forEach(c=>c.classList.remove('selected'));
+      b.classList.add('selected');
+      document.getElementById('inGoalCustom').value='';
+      S.goal=g;
+    };
+    gc.appendChild(b);
+  });
+}
+renderGoalChips();
+document.getElementById('inGoalCustom').addEventListener('input',e=>{
+  document.querySelectorAll('#goalChips .chip').forEach(c=>c.classList.remove('selected'));
+  S.goal=parseInt(e.target.value.replace(/[^0-9]/g,''),10)||0;
+});
+function submitGoal(){
+  if(!S.goal || S.goal<1){ document.getElementById('errGoal').style.display='block'; return; }
+  go('s-q6');
+}
+
+// Q6 meaning
+function submitMeaning(skip){
+  S.meaning = skip ? '' : document.getElementById('inMeaning').value.trim();
+  buildCalc(); go('s-calc');
+}
+
+// ================================================================
+// CALCULATOR - all maths lives here in code, never in the AI
+// ================================================================
+function fmt(n){ return n.toLocaleString('en-GB'); }
+function salesNeeded(price){ return Math.max(1, Math.ceil(S.goal/(price*4))); }
+
+function buildCalc(){
+  const pc=document.getElementById('priceChips');
+  pc.innerHTML='';
+  PRICES.forEach(p=>{
+    const b=document.createElement('button');
+    b.className='chip'+(p===S.calcPrice?' selected':'');
+    b.textContent=S.cur+p;
+    b.onclick=()=>{
+      S.calcPrice=p;
+      document.getElementById('inPriceCustom').value='';
+      pc.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+      b.classList.add('selected');
+      updateCalc();
+    };
+    pc.appendChild(b);
+  });
+  document.getElementById('inPriceCustom').placeholder='Or your own price ('+S.cur+')';
+  updateCalc();
+}
+document.getElementById('inPriceCustom').addEventListener('input',e=>{
+  const v=parseInt(e.target.value.replace(/[^0-9]/g,''),10);
+  if(v>0){
+    S.calcPrice=v;
+    document.querySelectorAll('#priceChips .chip').forEach(c=>c.classList.remove('selected'));
+    updateCalc();
+  }
+});
+function updateCalc(){
+  S.calcSales=parseInt(document.getElementById('salesSlider').value,10);
+  const monthly=S.calcPrice*S.calcSales*4;
+  document.getElementById('salesVal').textContent=S.calcSales+(S.calcSales===1?' sale':' sales')+' a week';
+  document.getElementById('calcMonthly').innerHTML=esc(S.cur)+fmt(monthly)+'<small>a month</small>';
+  const n=salesNeeded(S.calcPrice);
+  let line='To reach your <b>'+esc(S.cur)+fmt(S.goal)+' a month</b> at '+esc(S.cur)+S.calcPrice+', that’s <b>'+n+' sales a week</b>. Not thousands of followers. '+n+' sales.';
+  if(S.stage===4) line+=' And not one of them needs an appointment slot.';
+  document.getElementById('goalLine').innerHTML=line;
+}
+
+// ================================================================
+// AI CALL - same edge function as the Done In A Day toolkit
+// ================================================================
+async function callClaude(prompt, system, maxTokensOverride, prefill){
+  const messages = prefill
+    ? [{role:'user',content:prompt},{role:'assistant',content:prefill}]
+    : [{role:'user',content:prompt}];
+  const res = await fetch('/api/claude',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({
+      model:CONFIG.model,
+      max_tokens:maxTokensOverride||CONFIG.maxTokens,
+      system:system||'',
+      messages
+    })
+  });
+  if(!res.ok){
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err.error?.message||'Request failed');
+  }
+  const reader=res.body.getReader();
+  const decoder=new TextDecoder();
+  let fullText=prefill||'';
+  let buffer='';
+  while(true){
+    const {done,value}=await reader.read();
+    if(done) break;
+    buffer+=decoder.decode(value,{stream:true});
+    const lines=buffer.split(/\r?\n/);
+    buffer=lines.pop();
+    for(const line of lines){
+      if(line.startsWith('data: ')){
+        const data=line.slice(6).trim();
+        if(data==='[DONE]') continue;
+        try{
+          const parsed=JSON.parse(data);
+          if(parsed.type==='content_block_delta'&&parsed.delta?.text){
+            fullText+=parsed.delta.text;
+          } else if(parsed.type==='error'){
+            throw new Error(parsed.error?.message||'Stream error');
+          }
+        }catch(e){ if(e.message==='Stream error') throw e; }
+      }
+    }
+  }
+  if(!fullText||fullText===(prefill||'')) throw new Error('Empty response');
+  return fullText;
+}
+
+// ================================================================
+// PROMPT
+// ================================================================
+const SYSTEM_PROMPT = `You write one personalised "Family-First Business Map" for a woman building (or rebalancing) a digital product business around her family. You write as Suzy Olivier of Mothers of Enterprise: warm, direct, grounded, like a brilliant big sister who knows exactly what she is doing. UK English. Use the currency symbol given in the prompt exactly as provided, never convert it.
+
+HARD RULES, no exceptions:
+1. Never use em dashes. Use commas, full stops, or brackets instead.
+2. Never suggest, name, or hint at any specific digital product idea, title, topic, format, outline, or price for her. Not one, however tempting her answers make it. You may say her experience converts naturally into digital products people pay for. You may never say what the product should be. Finding the winning product is the job of a paid tool she will meet at the end of her Map.
+3. Never do arithmetic and never introduce new numbers. Use only the exact figures given in the prompt, word for word.
+4. Never invent statistics, testimonials, results, timescales for income, or guarantees. Never promise outcomes.
+5. Never assume who her customers are or will be. They may not be mothers, women, or adults. Do not call her buyers "mamas". (She herself is a mama, that word is fine for HER.)
+6. Banned words: delve, leverage, utilise, unlock, unleash, harness, elevate, streamline, foster, navigate, tapestry, testament, synergy, game changer, empower, seamless, transformative.
+7. Banned phrases: "sound familiar", "you're not alone", "I see you", "dive deep", "here's the thing", "the truth is", "let's be honest", "in today's world", "now more than ever", "at the end of the day", "imagine a world", "picture this", "take it to the next level".
+8. Maximum one "It's not X, it's Y" contrast sentence in the whole Map. No stacked three-word sentence fragments for drama.
+9. Use contractions throughout. Vary sentence length. Short paragraphs.
+10. Address her as "you". Use her first name once at most, in the opening sentence of "week", never mid-paragraph.
+11. No hollow empathy, no repeating her answers back like a therapist, no hype, no exclamation marks.
+12. You output only raw JSON. No explanation, no preamble, no markdown.`;
+
+function stageGuidance(){
+  switch(S.stage){
+    case 1: return {
+      label:'She does not know what she would sell yet.',
+      week:'Paint her first business-building week inside her real time pockets. Calm, doable, no overwhelm.',
+      sitting:'Show her that the skills and experience she described are exactly the raw material digital products are made from, and that people already pay for products built on knowledge like hers. Do not name any product.',
+      income:'Frame the figures as what becomes possible once she has one simple product out in the world.'
+    };
+    case 2: return {
+      label:'She has an idea but has never got it to launch.',
+      week:'Paint a week where her pockets of time go towards finally finishing and launching one thing, instead of circling it.',
+      sitting:'Acknowledge the idea she is carrying without naming or developing it. The gap is not more thinking, it is a finished product in her hands.',
+      income:'Frame the figures as what her idea could become once it exists as a real product.'
+    };
+    case 3: return {
+      label:'She is selling but sales are patchy and she feels like she is trying all the things.',
+      week:'Paint a week with less scattered doing, where her pockets go to one path that compounds instead of ten that do not.',
+      sitting:'She already has proof people buy from her. The raw material is there, what is missing is one clear path from stranger to sale that runs without her pushing it.',
+      income:'Frame the figures as what consistency looks like when sales stop depending on her daily effort.'
+    };
+    case 4: return {
+      label:'Her business works but it has maxed out her time. She wants a leveraged income stream, income that does not need her present.',
+      week:'This week is about buying hours back, not finding new ones. Some pockets go to building the digital version of what she already delivers, while the existing business keeps running as it is.',
+      sitting:'She is not starting a new business. What she already delivers to clients contains sellable knowledge that could earn without an appointment attached. Do not name what the product should be.',
+      income:'Frame the figures as a leveraged stream on top of the business she already has, income that arrives without another slot in her calendar.'
+    };
+  }
+}
+
+function pickOffer(){
+  if(!CONFIG.summerMachineActive) return CONFIG.offers.diad;
+  return S.stage===1 ? CONFIG.offers.diad : CONFIG.offers.ssm;
+}
+
+function buildPrompt(){
+  const g=stageGuidance();
+  const offer=pickOffer();
+  const rows=PRICES.map(p=>'At '+S.cur+p+': '+salesNeeded(p)+' sales a week').join('. ');
+  const nextStep = offer===CONFIG.offers.diad
+    ? 'The Done In A Day Digital Product AI Toolkit, where she finds her winning product idea and creates the finished product in less than a day.'
+    : 'The Automated Summer Sales Machine, the product toolkit, funnel and automation training in one, built once so it keeps selling while she lives her life.';
+
+  return `Create her Family-First Business Map from these answers.
+
+Her name: ${S.name}
+Hours available each week: ${S.hours}
+Where her time pockets appear: ${S.pockets.join(', ')}
+Her situation: ${g.label}
+In her own words about what she does / what people come to her for: "${S.raw}"
+Her currency symbol: ${S.cur}
+Her income goal: ${S.cur}${fmt(S.goal)} extra a month.${S.meaning?'\nWhat that money would do for her, in her own words: "'+S.meaning+'"':''}
+Pre-computed income figures (use these exactly, never recalculate): To reach ${S.cur}${fmt(S.goal)} a month: ${rows}. These use 4 weeks per month, slightly conservative.
+
+Section guidance:
+- "week": ${g.week} Two short paragraphs, 90 words maximum total. Use her actual named pockets.
+- "income": ${g.income} One or two sentences reacting to the pre-computed figures. No new numbers.
+- "sittingOn": ${g.sitting} 80 words maximum. This section is called "What You're Sitting On".
+- "momentum": Exactly 3 items. The pillar names are exactly: "Build your sales machine", "Social that serves", "Your invisible sales assistant". Each plan is 1 or 2 sentences personalised to her pockets and hours (sales machine = one simple path from stranger to buyer; social = 1 or 2 unhurried posts a week, no performing; assistant = simple automation that answers and sells while she is offline).
+- "gap": 60 words maximum. Name the one thing missing for her specifically, then lead naturally into her next step, which is: ${nextStep} Do not mention its price. Do not use the word "gap".
+
+Return this exact JSON shape:
+{"week":"...","income":"...","sittingOn":"...","momentum":[{"pillar":"...","plan":"..."},{"pillar":"...","plan":"..."},{"pillar":"...","plan":"..."}],"gap":"..."}`;
+}
+
+// ================================================================
+// GENERATE + RENDER
+// ================================================================
+const LOAD_MSGS=['Mapping your week...','Doing the income maths...','Looking at what you’re sitting on...','Drawing it all together...'];
+let loadTimer=null;
+
+async function generateMap(){
+  go('s-loading');
+  let i=0;
+  document.getElementById('loadMsg').textContent=LOAD_MSGS[0];
+  clearInterval(loadTimer);
+  loadTimer=setInterval(()=>{
+    i=(i+1)%LOAD_MSGS.length;
+    document.getElementById('loadMsg').textContent=LOAD_MSGS[i];
+  },2600);
+
+  try{
+    const result=await callClaude(buildPrompt(),SYSTEM_PROMPT,CONFIG.maxTokens,'{');
+    const clean=result.replace(/```[\w]*\n?/g,'').replace(/```/g,'');
+    const start=clean.indexOf('{');
+    let parsed=null;
+    if(start!==-1){
+      for(let e=clean.length-1;e>start;e--){
+        if(clean[e]==='}'){
+          try{
+            const p=JSON.parse(clean.slice(start,e+1));
+            if(p&&typeof p==='object'&&p.week){ parsed=p; break; }
+          }catch(e2){}
+        }
+      }
+    }
+    if(!parsed||!parsed.week||!parsed.sittingOn||!parsed.gap||!Array.isArray(parsed.momentum)) throw new Error('Could not build your Map');
+    clearInterval(loadTimer);
+    renderMap(parsed);
+  }catch(err){
+    clearInterval(loadTimer);
+    const eh=document.getElementById('errHelper');
+    if(location.protocol==='file:'){
+      eh.textContent='You’re previewing this file on your computer, so the Map can’t generate yet. It works once the page is live on your website.';
+    } else {
+      eh.textContent='Nothing you did wrong. Give it another go.';
+    }
+    go('s-error');
+  }
+}
+
+function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+function paras(t){ return String(t).split(/\n+/).filter(Boolean).map(p=>'<p>'+esc(p)+'</p>').join(''); }
+
+function renderMap(m){
+  document.getElementById('mapTitle').textContent=S.name+'’s Family-First Business Map';
+  document.getElementById('mapIntro').textContent='Built from your answers, your hours, and your numbers. Save it, print it, stick it on the fridge.';
+
+  document.getElementById('secWeek').innerHTML=paras(m.week);
+
+  document.getElementById('incomeGoal').textContent='Your goal: '+S.cur+fmt(S.goal)+' extra a month.';
+  document.getElementById('incomeRows').innerHTML=PRICES.map(p=>
+    '<li>At <b>'+esc(S.cur)+p+'</b>, that’s <b>'+salesNeeded(p)+' sales a week</b></li>'
+  ).join('');
+  document.getElementById('secIncome').innerHTML=paras(m.income);
+
+  document.getElementById('secSitting').innerHTML=paras(m.sittingOn);
+
+  document.getElementById('secMomentum').innerHTML=m.momentum.slice(0,3).map(x=>
+    '<div class="pillar"><span class="p-name">'+esc(x.pillar)+'</span><br>'+esc(x.plan)+'</div>'
+  ).join('');
+
+  document.getElementById('secGap').innerHTML=paras(m.gap);
+
+  const offer=pickOffer();
+  document.getElementById('ctaCard').innerHTML=
+    '<h3>'+esc(offer.headline)+'</h3>'+
+    '<p>'+esc(offer.body)+'</p>'+
+    (offer.doors?'<div class="doors">'+esc(offer.doors)+'</div>':'')+
+    '<a class="cta-btn" href="'+offer.url+'" target="_blank" rel="noopener">'+esc(offer.button)+'</a>';
+
+  go('s-map');
+}
+
+// enter key on name field
+document.getElementById('inName').addEventListener('keydown',e=>{ if(e.key==='Enter') startMap(); });
+</script>
+</body>
+</html>
