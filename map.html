@@ -178,7 +178,7 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
   <div class="screen active" id="s-welcome">
     <div class="eyebrow">The Family-First Business Map</div>
     <h1>Let's map your business, mama.</h1>
-    <p class="sub">6 quick questions, about 3 minutes. At the end you'll have a personalised map showing how digital products fit into the life (and business) you already have, what they could realistically earn you, and what to build first.</p>
+    <p class="sub">A handful of quick questions, about 3 minutes. At the end you'll have a personalised map showing how digital products fit into the life (and business) you already have, what they could realistically earn you, and what to build first.</p>
     <label class="qlabel" for="inName" style="font-size:18px">First things first, what's your name?</label>
     <input type="text" id="inName" class="center-input" placeholder="Your first name" maxlength="30" style="margin-top:14px">
     <button class="btn" onclick="startMap()">Start my Map</button>
@@ -224,10 +224,19 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
     <div class="err" id="errRaw">A few words here and your Map gets so much better.</div>
   </div>
 
+  <!-- Q4B DELIVERY MODEL (only for stages 3 and 4) -->
+  <div class="screen" id="s-q4b">
+    <div class="progress"><span style="width:74%"></span></div>
+    <button class="back" onclick="go('s-q4')">&larr; Back</button>
+    <div class="qlabel">And how do you mainly work with people right now?</div>
+    <div class="helper">So your Map reflects your actual business, not a guess.</div>
+    <div class="cards" id="deliveryCards"></div>
+  </div>
+
   <!-- Q5 GOAL -->
   <div class="screen" id="s-q5">
     <div class="progress"><span style="width:83%"></span></div>
-    <button class="back" onclick="go('s-q4')">&larr; Back</button>
+    <button class="back" onclick="backFromQ5()">&larr; Back</button>
     <div class="qlabel">What extra monthly income would change things for your family?</div>
     <div class="helper">There's no wrong answer. This becomes the target your Map is built around.</div>
     <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:700;text-align:center;margin-bottom:10px">Your currency</div>
@@ -381,7 +390,7 @@ const CONFIG = {
 // STATE
 // ================================================================
 const S = {
-  name:'', hours:'', pockets:[], stage:0, raw:'', goal:0, meaning:'',
+  name:'', hours:'', pockets:[], stage:0, raw:'', delivery:'', goal:0, meaning:'',
   calcPrice:47, calcSales:7, cur:'£'
 };
 
@@ -462,8 +471,25 @@ function setQ4(){
 function submitRaw(){
   const v=document.getElementById('inRaw').value.trim();
   if(!v){ document.getElementById('errRaw').style.display='block'; return; }
-  S.raw=v; go('s-q5');
+  S.raw=v;
+  if(S.stage>=3){ go('s-q4b'); } else { S.delivery=''; go('s-q5'); }
 }
+
+// Q4b delivery model (stages 3 and 4 only)
+const DELIVERY = [
+  '1:1 (coaching, consulting, appointments)',
+  'Done-for-you services (I do the work for them)',
+  'Group programmes or a membership',
+  'Digital products (courses, templates, downloads)',
+  'A proper mix of these'
+];
+DELIVERY.forEach(d=>{
+  const b=document.createElement('button');
+  b.className='card-opt'; b.textContent=d;
+  b.onclick=()=>{ S.delivery=d; go('s-q5'); };
+  document.getElementById('deliveryCards').appendChild(b);
+});
+function backFromQ5(){ go(S.stage>=3?'s-q4b':'s-q4'); }
 
 // Q5 currency + goal
 const CURRENCIES=[
@@ -568,7 +594,12 @@ function updateCalc(){
   document.getElementById('calcMonthly').innerHTML=esc(S.cur)+fmt(monthly)+'<small>a month</small>';
   const n=salesNeeded(S.calcPrice);
   let line='To reach your <b>'+esc(S.cur)+fmt(S.goal)+' a month</b> at '+esc(S.cur)+S.calcPrice+', that’s <b>'+n+' sales a week</b>. Not thousands of followers. '+n+' sales.';
-  if(S.stage===4) line+=' And not one of them needs an appointment slot.';
+  if(S.stage===4){
+    const timeBound = S.delivery.indexOf('1:1')===0 || S.delivery.indexOf('Done-for-you')===0 || S.delivery.indexOf('A proper mix')===0;
+    line += timeBound
+      ? ' And not one of them needs an appointment slot.'
+      : ' And every one of them can land while you’re doing something else entirely.';
+  }
   document.getElementById('goalLine').innerHTML=line;
 }
 
@@ -664,8 +695,8 @@ function stageGuidance(){
     case 4: return {
       label:'Her business works but it has maxed out her time. She wants a leveraged income stream, income that does not need her present.',
       week:'This week is about buying hours back, not finding new ones. Some pockets go to building the digital version of what she already delivers, while the existing business keeps running as it is.',
-      sitting:'She is not starting a new business. What she already delivers to clients contains sellable knowledge that could earn without an appointment attached. Do not name what the product should be.',
-      income:'Frame the figures as a leveraged stream on top of the business she already has, income that arrives without another slot in her calendar.'
+      sitting:'She is not starting a new business. What she already delivers contains sellable knowledge that could earn without her present. Do not name what the product should be.',
+      income:'Frame the figures as a leveraged stream on top of the business she already has, income that arrives without needing more of her time.'
     };
   }
 }
@@ -692,7 +723,7 @@ function buildPrompt(){
 Her name: ${S.name}
 Hours available each week: ${S.hours}
 Where her time pockets appear: ${S.pockets.join(', ')}
-Her situation: ${g.label}
+Her situation: ${g.label}${S.delivery?'\nHow she currently works with people: '+S.delivery+'. Build "week", "sittingOn" and "gap" around this actual delivery model. Never assume one-to-one work, appointments, or client calls unless that matches what she said. If she already sells digital products, she is not starting from zero: frame this as upgrading and systemising what she has, never as her first product.':''}
 In her own words about what she does / what people come to her for: "${S.raw}"
 Her currency symbol: ${S.cur}
 Her income goal: ${S.cur}${fmt(S.goal)} extra a month.${S.meaning?'\nWhat that money would do for her, in her own words: "'+S.meaning+'"':''}
@@ -700,7 +731,7 @@ Pre-computed income figures (use these exactly, never recalculate): To reach ${S
 
 Section guidance:
 - "week": ${g.week} Two short paragraphs, 90 words maximum total. Use her actual named pockets.
-- "income": ${g.income} One or two sentences reacting to the pre-computed figures. No new numbers.
+- "income": ${g.income} One or two sentences reacting to the pre-computed figures. No new numbers.${S.meaning?' She told you what this money would actually do for her. Connect the figures to that, echoing her own words once, naturally, without quoting them back like a therapist.':''}
 - "sittingOn": ${g.sitting} 80 words maximum. This section is called "What You're Sitting On".
 - "momentum": Exactly 3 items. The pillar names are exactly: "Build your sales machine", "Social that serves", "Your invisible sales assistant". Each plan is 1 or 2 sentences personalised to her pockets and hours (sales machine = one simple path from stranger to buyer; social = 1 or 2 unhurried posts a week, no performing; assistant = simple automation that answers and sells while she is offline).
 - "gap": 60 words maximum. Name the one thing missing for her specifically, then lead naturally into her next step, which is: ${nextStep} Do not mention its price. Do not use the word "gap".
