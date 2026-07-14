@@ -124,6 +124,11 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
 .income-rows li{padding:9px 0;border-bottom:1px solid var(--cream);font-size:16px}
 .income-rows li:last-child{border-bottom:none}
 .income-rows b{color:var(--pink)}
+.sevens-note{
+  background:var(--cream);border-radius:12px;padding:14px 16px;
+  font-size:14px;line-height:1.55;margin-top:14px;color:var(--teal);
+}
+.sevens-note b{display:block;margin-bottom:4px}
 .pillar{padding:12px 0;border-bottom:1px solid var(--cream)}
 .pillar:last-child{border-bottom:none}
 .pillar .p-name{font-weight:700;color:var(--teal)}
@@ -136,6 +141,17 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
   border-radius:99px;padding:16px 38px;font-weight:700;font-size:17px;transition:transform .12s ease;
 }
 .cta-btn:hover{transform:translateY(-1px)}
+.cta-alt{
+  background:var(--white);border:2px solid var(--blush);border-radius:18px;
+  padding:22px 24px;text-align:center;margin-top:14px;
+}
+.cta-alt:empty{display:none}
+.cta-alt .alt-intro{font-family:'Libre Baskerville',serif;font-size:17px;font-weight:700;margin-bottom:8px}
+.cta-alt p{font-size:15px;margin-bottom:4px;color:#4d6f6f}
+.alt-btn{
+  display:inline-block;margin-top:12px;color:var(--pink);font-weight:700;font-size:15px;
+  text-decoration:underline;
+}
 .map-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
 .map-actions .btn{margin:0}
 .footer{text-align:center;margin-top:44px;font-size:13px;color:#4d6f6f;letter-spacing:1px}
@@ -290,6 +306,9 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
       <ul class="income-rows" id="incomeRows"></ul>
       <div id="secIncome"></div>
       <p style="font-size:13.5px;font-style:italic;color:#4d6f6f;margin-top:12px">Projections at example prices, not promises. Your real price comes when your product exists.</p>
+      <div class="sevens-note">
+        <b>Wondering why the example prices end in 7?</b> Old direct response marketers swore their 7-ending prices out-sold everything else, and the habit stuck across the whole digital product world. The properly tested bit is the first digit: 97 feels meaningfully cheaper than 100 because we anchor on the 9, not the 7. So treat the 7 as tradition, not law. Price how you like, and test it for yourself.
+      </div>
     </div>
 
     <div class="map-section">
@@ -308,6 +327,7 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
     </div>
 
     <div class="cta-card" id="ctaCard"></div>
+    <div class="cta-alt no-print" id="ctaAlt"></div>
 
     <div class="map-actions no-print">
       <button class="btn btn-secondary" onclick="window.print()">Save my Map</button>
@@ -327,10 +347,11 @@ const CONFIG = {
   model: 'claude-haiku-4-5-20251001',
   maxTokens: 2500,
 
-  // THE SEPTEMBER SWITCH:
-  // true  = stages 2, 3 and 4 route to the Automated Summer Sales Machine
-  // false = everyone routes to Done In A Day (flip this when doors close early September)
-  summerMachineActive: true,
+  // THE MACHINE SWITCH:
+  // true  = the Automated Sales Machine is offered (featured for stages 2, 3 and 4,
+  //         and shown as the alternative for stage 1)
+  // false = it disappears completely and everyone gets Done In A Day only
+  machineActive: true,
 
   offers: {
     diad: {
@@ -338,16 +359,20 @@ const CONFIG = {
       url: 'https://www.haveitallacademy.com/digitalproduct',
       headline: 'Your map is drawn. Now you need the product.',
       body: 'The Done In A Day Digital Product AI Toolkit walks you through finding your winning product idea, pricing it with confidence, and creating the whole thing with simple AI tools. In less than a day.',
-      doors: '',
-      button: 'Show me Done In A Day'
+      button: 'Show me Done In A Day',
+      altIntro: 'Just want the product piece first?',
+      altBody: 'Done In A Day gets your winning idea found, priced and created in less than a day.',
+      altButton: 'See Done In A Day'
     },
     ssm: {
-      name: 'The Automated Summer Sales Machine',
+      name: 'The Automated Sales Machine',
       url: 'https://www.haveitallacademy.com/automated-sales',
       headline: 'Your map is drawn. Now let’s build the machine.',
-      body: 'The Automated Summer Sales Machine is the product toolkit, the funnel and the automation training in one. Build it once and it keeps selling while you live your life.',
-      doors: 'Doors close early September',
-      button: 'Show me the Summer Sales Machine'
+      body: 'The Automated Sales Machine is the product toolkit, the funnel and the automation training in one. Build it once and it keeps selling while you live your life.',
+      button: 'Show me the Automated Sales Machine',
+      altIntro: 'Want the whole selling system?',
+      altBody: 'The Automated Sales Machine bundles the product toolkit with the funnel and automation training, so it sells while you live.',
+      altButton: 'See the Automated Sales Machine'
     }
   }
 };
@@ -646,8 +671,12 @@ function stageGuidance(){
 }
 
 function pickOffer(){
-  if(!CONFIG.summerMachineActive) return CONFIG.offers.diad;
+  if(!CONFIG.machineActive) return CONFIG.offers.diad;
   return S.stage===1 ? CONFIG.offers.diad : CONFIG.offers.ssm;
+}
+function pickAltOffer(){
+  if(!CONFIG.machineActive) return null;
+  return pickOffer()===CONFIG.offers.diad ? CONFIG.offers.ssm : CONFIG.offers.diad;
 }
 
 function buildPrompt(){
@@ -656,7 +685,7 @@ function buildPrompt(){
   const rows=PRICES.map(p=>'At '+S.cur+p+': '+salesNeeded(p)+' sales a week').join('. ');
   const nextStep = offer===CONFIG.offers.diad
     ? 'The Done In A Day Digital Product AI Toolkit, where she finds her winning product idea and creates the finished product in less than a day.'
-    : 'The Automated Summer Sales Machine, the product toolkit, funnel and automation training in one, built once so it keeps selling while she lives her life.';
+    : 'The Automated Sales Machine, the product toolkit, funnel and automation training in one, built once so it keeps selling while she lives her life.';
 
   return `Create her Family-First Business Map from these answers.
 
@@ -753,8 +782,14 @@ function renderMap(m){
   document.getElementById('ctaCard').innerHTML=
     '<h3>'+esc(offer.headline)+'</h3>'+
     '<p>'+esc(offer.body)+'</p>'+
-    (offer.doors?'<div class="doors">'+esc(offer.doors)+'</div>':'')+
     '<a class="cta-btn" href="'+offer.url+'" target="_blank" rel="noopener">'+esc(offer.button)+'</a>';
+
+  const alt=pickAltOffer();
+  document.getElementById('ctaAlt').innerHTML = alt
+    ? '<div class="alt-intro">'+esc(alt.altIntro)+'</div>'+
+      '<p>'+esc(alt.altBody)+'</p>'+
+      '<a class="alt-btn" href="'+alt.url+'" target="_blank" rel="noopener">'+esc(alt.altButton)+'</a>'
+    : '';
 
   go('s-map');
 }
