@@ -562,15 +562,15 @@ function setQ4(){
   const L=document.getElementById('q4Label'), H=document.getElementById('q4Helper'), T=document.getElementById('inRaw');
   if(S.stage===3){
     L.textContent='What are you selling right now, and who buys it?';
-    H.textContent='A sentence is plenty.';
-    T.placeholder='e.g. custom cake orders, mostly local parents for birthdays';
+    H.textContent='A sentence is plenty. Mention how long you’ve been doing it, if you like.';
+    T.placeholder='e.g. custom cake orders for local parents, about a year now';
   } else if(S.stage===4){
     L.textContent='What does your business do, and what eats most of your time?';
-    H.textContent='A sentence is plenty.';
-    T.placeholder='e.g. I’m a bookkeeper with full client books, month-end swallows me whole';
+    H.textContent='A sentence is plenty. Mention how long you’ve been doing it, if you like.';
+    T.placeholder='e.g. bookkeeper for 3 years, full client books, month-end swallows me whole';
   } else {
     L.textContent='What do people always come to you for?';
-    H.textContent='Your work background, your skills, the thing friends ask your help with. A few words is plenty.';
+    H.textContent='Your work background, your skills, the thing friends ask your help with. A few words is plenty (how long you’ve been at it helps too).';
     T.placeholder='e.g. meal planning, organising chaos, ten years in early years teaching';
   }
 }
@@ -793,7 +793,8 @@ HARD RULES, no exceptions:
 9. Use contractions throughout. Vary sentence length. Short paragraphs.
 10. Address her as "you". Use her first name once at most, in the opening sentence of "week", never mid-paragraph.
 11. No hollow empathy, no repeating her answers back like a therapist, no hype, no exclamation marks.
-12. You output only raw JSON. No explanation, no preamble, no markdown.`;
+12. You output only raw JSON. No explanation, no preamble, no markdown.
+13. NEVER ASSUME ANYTHING ABOUT HER THAT SHE DID NOT TELL YOU. Use only the facts in her answers. Do not invent or imply how long she has been doing something ("years of", "a decade", "seasoned", "experienced"), how many clients or customers she has had, her results, her qualifications, her age, her family, her background, or how she feels. If she gave a timeframe, you may use exactly that. If she did not, write so it is true whether she started last month or twenty years ago (e.g. "the coaching you're already doing", not "your years of coaching"). When in doubt, describe what she said, not what you imagine. A Map that makes up facts about her is worse than a shorter Map.`;
 
 function stageGuidance(){
   switch(S.stage){
