@@ -129,6 +129,31 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
   font-size:14px;line-height:1.55;margin-top:14px;color:var(--teal);
 }
 .sevens-note b{display:block;margin-bottom:4px}
+.route{list-style:none;margin:0;padding:0;position:relative}
+.route li{position:relative;padding:4px 0 18px 34px}
+.route li:last-child{padding-bottom:0}
+.route li:before{content:'';position:absolute;left:9px;top:22px;bottom:-4px;width:2px;background:var(--blush)}
+.route li:last-child:before{display:none}
+.route .dot{position:absolute;left:0;top:4px;width:20px;height:20px;border-radius:50%;background:var(--white);border:3px solid var(--blush)}
+.route li.done .dot{background:var(--teal);border-color:var(--teal)}
+.route li.here .dot{background:var(--pink);border-color:var(--pink);box-shadow:0 0 0 5px rgba(239,25,112,.15)}
+.route .leg{font-weight:700;color:var(--teal)}
+.route .phases{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#4d6f6f;font-weight:600;margin-left:6px}
+.route .here-badge{display:inline-block;background:var(--pink);color:#fff;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-radius:99px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+.route p{margin:4px 0 0;font-size:16px}
+.route-note{font-size:14px;font-style:italic;color:#4d6f6f;margin-top:14px}
+.testimonial{background:var(--blush);border-radius:18px;padding:24px 24px 20px;margin-bottom:18px}
+.testimonial .t-head{font-family:'Libre Baskerville',serif;font-size:19px;font-weight:700;margin-bottom:8px}
+.testimonial p{font-size:16px;font-style:italic;margin-bottom:10px}
+.testimonial .t-who{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700}
+.keep-box{background:var(--white);border:2px solid var(--blush);border-radius:18px;padding:24px;text-align:center;margin-top:22px}
+.keep-box h3{font-family:'Libre Baskerville',serif;font-size:19px;margin-bottom:6px}
+.keep-box p{font-size:15px;color:#4d6f6f;margin-bottom:14px}
+.keep-box input[type=email]{width:100%;max-width:340px;border:2px solid var(--blush);border-radius:14px;background:var(--white);padding:13px 16px;font-family:'Raleway',sans-serif;font-size:16px;color:var(--teal);outline:none}
+.keep-box input[type=email]:focus{border-color:var(--coral)}
+.keep-box .btn{margin-top:14px}
+.keep-msg{font-weight:600;margin-top:12px;display:none}
+.keep-small{font-size:12.5px;color:#4d6f6f;margin-top:10px}
 .pillar{padding:12px 0;border-bottom:1px solid var(--cream)}
 .pillar:last-child{border-bottom:none}
 .pillar .p-name{font-weight:700;color:var(--teal)}
@@ -234,6 +259,15 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
     <button class="btn" id="btnQ4b" onclick="submitDelivery()" disabled>Next</button>
   </div>
 
+  <!-- Q4C WHAT'S STOPPED YOU (all stages) -->
+  <div class="screen" id="s-q4c">
+    <div class="progress"><span style="width:78%"></span></div>
+    <button class="back" onclick="backFromQ4c()">&larr; Back</button>
+    <div class="qlabel">And what's held you back most so far?</div>
+    <div class="helper">Pick the biggest one. No judgement, it just makes your Map far more useful.</div>
+    <div class="cards" id="blockerCards"></div>
+  </div>
+
   <!-- Q5 GOAL -->
   <div class="screen" id="s-q5">
     <div class="progress"><span style="width:83%"></span></div>
@@ -327,8 +361,9 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
     </div>
 
     <div class="map-section">
-      <h3>Your Momentum Plan</h3>
-      <div id="secMomentum"></div>
+      <h3>Your Route</h3>
+      <ul class="route" id="secRoute"></ul>
+      <p class="route-note">This is the route every Have It All Academy student walks, in this order. Your dot shows where you'd start.</p>
     </div>
 
     <div class="map-section">
@@ -336,13 +371,26 @@ input[type=range]{width:100%;accent-color:var(--pink);height:34px}
       <div id="secGap"></div>
     </div>
 
+    <div class="testimonial" id="testimonial"></div>
+
     <div class="cta-card" id="ctaCard"></div>
     <div class="cta-alt no-print" id="ctaAlt"></div>
 
+    <div class="keep-box no-print">
+      <h3>Keep your Map</h3>
+      <p>Pop your email in and I'll send you a private link to your full Map, so you can come back to it (or save it as a PDF) any time.</p>
+      <input type="email" id="inEmail" placeholder="Your email address" autocomplete="email">
+      <button class="btn" id="btnKeep" onclick="sendMap()">Email me my Map</button>
+      <div class="keep-msg" id="keepMsg"></div>
+      <p class="keep-small">Same email you signed up with is perfect. You can unsubscribe any time.</p>
+    </div>
+
     <div class="map-actions no-print">
-      <button class="btn btn-secondary" onclick="window.print()">Save my Map</button>
+      <button class="btn btn-secondary" onclick="downloadForAI()">Download for my AI</button>
+      <button class="btn btn-secondary" onclick="window.print()">Print my Map</button>
       <button class="btn" onclick="location.reload()">Start again</button>
     </div>
+    <p class="note no-print">"Download for my AI" saves your Map as a simple file any AI can read, so it already knows your hours, your goal and where you're starting from.</p>
 
     <div class="footer">With love and belief, <b>Suzy XO</b><br>Mothers of Enterprise&reg;</div>
   </div>
@@ -361,7 +409,20 @@ const CONFIG = {
   // true  = the Automated Sales Machine is offered (featured for stages 2, 3 and 4,
   //         and shown as the alternative for stage 1)
   // false = it disappears completely and everyone gets Done In A Day only
-  machineActive: true,
+  machineActive: false,   // benched October 2026
+
+  // WHICH OFFER EACH STAGE SEES (first = main card, second = the smaller alternative).
+  // Stages: 1 no idea yet · 2 idea, can't launch · 3 selling but patchy · 4 maxed out
+  // Options: 'diad', 'academy', 'ssm' (or null for no alternative)
+  routing: {
+    1: ['diad', 'academy'],
+    2: ['academy', 'diad'],
+    3: ['academy', 'diad'],
+    4: ['academy', 'diad']
+  },
+
+  // Turn sending answers to Kartra on/off (needs the 3 KARTRA_ settings in Netlify).
+  kartraActive: true,
 
   offers: {
     diad: {
@@ -372,7 +433,20 @@ const CONFIG = {
       button: 'Show me Done In A Day',
       altIntro: 'Just want the product piece first?',
       altBody: 'Done In A Day gets your winning idea found, priced and created in less than a day.',
-      altButton: 'See Done In A Day'
+      altButton: 'See Done In A Day',
+      promptLine: 'The Done In A Day Digital Product AI Toolkit, where she finds her winning product idea and creates the finished product in less than a day.'
+    },
+    academy: {
+      name: 'The Have It All Digital Business Academy',
+      url: 'https://www.haveitallacademy.com/',
+      // ⚠️ JANUARY: update the price lines below when the new Academy launches at £477
+      headline: 'Your map is drawn. Now let’s walk the route together.',
+      body: 'The Have It All Academy is the whole route on your Map: all 9 phases, at your own pace, in the hours you actually have. Join now for £97 and the January AI upgrade is included (an AI sidekick in every phase). From January it’s £477. 7-day money-back guarantee.',
+      button: 'Show me the Academy',
+      altIntro: 'Want the whole route, not just the product?',
+      altBody: 'The Have It All Academy takes you from first idea to a business that sells around your family. £97 now, with the January AI upgrade included.',
+      altButton: 'See the Academy',
+      promptLine: 'The Have It All Digital Business Academy: the whole route on her Map, 9 phases she works through at her own pace, with an AI sidekick in every phase from January.'
     },
     ssm: {
       name: 'The Automated Sales Machine',
@@ -382,7 +456,8 @@ const CONFIG = {
       button: 'Show me the Automated Sales Machine',
       altIntro: 'Want the whole selling system?',
       altBody: 'The Automated Sales Machine bundles the product toolkit with the funnel and automation training, so it sells while you live.',
-      altButton: 'See the Automated Sales Machine'
+      altButton: 'See the Automated Sales Machine',
+      promptLine: 'The Automated Sales Machine, the product toolkit, funnel and automation training in one, built once so it keeps selling while she lives her life.'
     }
   }
 };
@@ -391,7 +466,7 @@ const CONFIG = {
 // STATE
 // ================================================================
 const S = {
-  name:'', hours:'', pockets:[], stage:0, raw:'', delivery:[], goal:0, meaning:'',
+  name:'', hours:'', pockets:[], stage:0, raw:'', delivery:[], blocker:'', goal:0, meaning:'', map:null,
   calcPrice:47, calcSales:7, cur:'£'
 };
 
@@ -404,6 +479,36 @@ const STAGES = [
   'My business works, but it’s maxed out my time'
 ];
 const GOALS = [500,1000,2500,5000];
+const BLOCKERS = [
+  'I don’t know what to make (or what would actually sell)',
+  'Time. There’s never enough of it',
+  'The tech side overwhelms me',
+  'Confidence. I’m not sure I’m the right person to do this',
+  'I’ve tried things and they didn’t stick',
+  'Life keeps happening (a move, a baby, a hard season)'
+];
+// The Academy route. Phase names match the Academy curriculum.
+const ROUTE = [
+  { leg:'Ditch the doubt', phases:'Phases 1–2', what:'getting clear on what’s possible and what makes you irresistible' },
+  { leg:'Your easy-yes offer', phases:'Phases 3–4', what:'finding, validating, creating and packaging the product' },
+  { leg:'Your sales machine', phases:'Phases 5–7', what:'sales page, emails that turn into income, social media that serves instead of drains' },
+  { leg:'Grow without more of you', phases:'Phases 8–9', what:'an invisible sales assistant (automation) and scaling at your pace' }
+];
+// Verbatim Academy testimonials, matched to each stage. Never AI-written.
+const TESTIMONIALS = {
+  1: { head:'“I have self-belief I never thought possible”', quote:'Starting my own business had been a dream for a long time, but I doubted whether I had the knowledge or confidence to make it happen. Joining Suzy’s Have It All Academy has been one of the best decisions I’ve ever made.', who:'Claire · Health Coach' },
+  2: { head:'“Like a wise friend in your corner”', quote:'I’ve realized I actually have skills and expertise that people want and need, and Suzy’s step-by-step approach has given me the clarity and confidence to move forward... It feels less like taking a course and more like having a wise friend in your corner giving you a gentle shove toward your goals.', who:'Melanie · Life Coach' },
+  3: { head:'“Hope and a roadmap”', quote:'I was desperate to find a way to earn money while actually being present with my family... If you’re a mum trying to build a business around school pick ups and life, this program gives you hope and a roadmap.', who:'Michelle · InBalance Pilates' },
+  4: { head:'“I’ve reshaped my business around my son’s needs”', quote:'I’m finally learning how to use AI in a way that feels simple and exciting. Working at my own pace encouraged me to reshape my business around my son’s needs and our family life.', who:'Kellyanne · Illustrator & Graphic Designer' }
+};
+// Where she starts on the route (0-based leg index).
+function hereIndex(){
+  if(S.stage===1) return 0;
+  if(S.stage===2) return 1;
+  if(S.stage===3) return 2;
+  // stage 4: already sells digital products → sales machine, otherwise build the offer first
+  return S.delivery.some(d=>d.indexOf('Digital products')===0) ? 2 : 1;
+}
 const PRICES = [27,47,97];
 
 // ================================================================
@@ -473,7 +578,7 @@ function submitRaw(){
   const v=document.getElementById('inRaw').value.trim();
   if(!v){ document.getElementById('errRaw').style.display='block'; return; }
   S.raw=v;
-  if(S.stage>=3){ go('s-q4b'); } else { S.delivery=[]; go('s-q5'); }
+  if(S.stage>=3){ go('s-q4b'); } else { S.delivery=[]; go('s-q4c'); }
 }
 
 // Q4b delivery model (stages 3 and 4 only, multi-select)
@@ -494,8 +599,20 @@ DELIVERY.forEach(d=>{
   };
   document.getElementById('deliveryCards').appendChild(b);
 });
-function submitDelivery(){ if(S.delivery.length) go('s-q5'); }
-function backFromQ5(){ go(S.stage>=3?'s-q4b':'s-q4'); }
+function submitDelivery(){ if(S.delivery.length) go('s-q4c'); }
+function backFromQ4c(){ go(S.stage>=3?'s-q4b':'s-q4'); }
+function backFromQ5(){ go('s-q4c'); }
+// Q4c blocker (single choice)
+BLOCKERS.forEach(t=>{
+  const b=document.createElement('button');
+  b.className='card-opt'; b.textContent=t;
+  b.onclick=()=>{
+    document.querySelectorAll('#blockerCards .card-opt').forEach(c=>c.classList.remove('selected'));
+    b.classList.add('selected');
+    S.blocker=t; go('s-q5');
+  };
+  document.getElementById('blockerCards').appendChild(b);
+});
 
 // Q5 currency + goal
 const CURRENCIES=[
@@ -708,21 +825,25 @@ function stageGuidance(){
 }
 
 function pickOffer(){
-  if(!CONFIG.machineActive) return CONFIG.offers.diad;
-  return S.stage===1 ? CONFIG.offers.diad : CONFIG.offers.ssm;
+  const r=CONFIG.routing[S.stage]||['diad',null];
+  let o=CONFIG.offers[r[0]];
+  if(r[0]==='ssm' && !CONFIG.machineActive) o=CONFIG.offers.diad;
+  return o;
 }
 function pickAltOffer(){
-  if(!CONFIG.machineActive) return null;
-  return pickOffer()===CONFIG.offers.diad ? CONFIG.offers.ssm : CONFIG.offers.diad;
+  const r=CONFIG.routing[S.stage]||['diad',null];
+  if(!r[1]) return null;
+  if(r[1]==='ssm' && !CONFIG.machineActive) return null;
+  const alt=CONFIG.offers[r[1]];
+  return alt===pickOffer()?null:alt;
 }
-
 function buildPrompt(){
   const g=stageGuidance();
   const offer=pickOffer();
   const rows=PRICES.map(p=>'At '+S.cur+p+': '+salesNeeded(p)+' sales a week').join('. ');
-  const nextStep = offer===CONFIG.offers.diad
-    ? 'The Done In A Day Digital Product AI Toolkit, where she finds her winning product idea and creates the finished product in less than a day.'
-    : 'The Automated Sales Machine, the product toolkit, funnel and automation training in one, built once so it keeps selling while she lives her life.';
+  const nextStep = offer.promptLine;
+  const here = hereIndex();
+  const routeLines = ROUTE.map((r,i)=>'- "'+r.leg+'" ('+r.what+'): '+(i<here?'BEHIND HER, she has enough of this ground covered already':i===here?'WHERE SHE STARTS':'AHEAD of her')).join('\n');
 
   return `Create her Family-First Business Map from these answers.
 
@@ -730,6 +851,7 @@ Her name: ${S.name}
 Hours available each week: ${S.hours}
 Where her time pockets appear: ${S.pockets.join(', ')}
 Her situation: ${g.label}${S.delivery.length?'\nHow she currently works with people (may be several at once): '+S.delivery.join(' + ')+'. Build "week", "sittingOn" and "gap" around this actual delivery model. Never assume one-to-one work, appointments, or client calls unless that matches what she said. If she already sells digital products, she is not starting from zero: frame this as upgrading and systemising what she has, never as her first product.':''}
+What has held her back most so far: ${S.blocker}
 In her own words about what she does / what people come to her for: "${S.raw}"
 Her currency symbol: ${S.cur}
 Her income goal: ${S.cur}${fmt(S.goal)} extra a month.${S.meaning?'\nWhat that money would do for her, in her own words: "'+S.meaning+'"':''}
@@ -739,11 +861,13 @@ Section guidance:
 - "week": ${g.week} Two short paragraphs, 90 words maximum total. Use her actual named pockets.
 - "income": ${g.income} One or two sentences reacting to the pre-computed figures. No new numbers.${S.meaning?' She told you what this money would actually do for her. Connect the figures to that, echoing her own words once, naturally, without quoting them back like a therapist.':''}
 - "sittingOn": ${g.sitting} 80 words maximum. This section is called "What You're Sitting On".
-- "momentum": Exactly 3 items. The pillar names are exactly: "Build your sales machine", "Social that serves", "Your invisible sales assistant". Each plan is 1 or 2 sentences personalised to her pockets and hours (sales machine = one simple path from stranger to buyer; social = 1 or 2 unhurried posts a week, no performing; assistant = simple automation that answers and sells while she is offline).
-- "gap": 60 words maximum. Name the one thing missing for her specifically, then lead naturally into her next step, which is: ${nextStep} Do not mention its price. Do not use the word "gap".
+- "route": Exactly 4 items, in this order, using these leg names exactly:
+${routeLines}
+  For a leg BEHIND her: 1 short sentence crediting what she already has, from her answers. For WHERE SHE STARTS: 2 sentences on what this leg looks like inside her real pockets and hours, and why it comes first for her. For legs AHEAD: 1 sentence each on what it will give her, personalised to her life (no product ideas, no numbers, no timescales).
+- "gap": 70 words maximum. Name the one thing missing for her specifically. She told you what has held her back most: "${S.blocker}". Speak to that directly and gently, without repeating it back word for word, and show why it's solvable in her situation. Then lead naturally into her next step, which is: ${nextStep} Do not mention its price. Do not use the word "gap".
 
 Return this exact JSON shape:
-{"week":"...","income":"...","sittingOn":"...","momentum":[{"pillar":"...","plan":"..."},{"pillar":"...","plan":"..."},{"pillar":"...","plan":"..."}],"gap":"..."}`;
+{"week":"...","income":"...","sittingOn":"...","route":[{"leg":"...","plan":"..."},{"leg":"...","plan":"..."},{"leg":"...","plan":"..."},{"leg":"...","plan":"..."}],"gap":"..."}`;
 }
 
 // ================================================================
@@ -752,7 +876,20 @@ Return this exact JSON shape:
 const LOAD_MSGS=['Mapping your week...','Doing the income maths...','Looking at what you’re sitting on...','Drawing it all together...'];
 let loadTimer=null;
 
+// PREVIEW MODE: on your own computer the AI can't run, so show sample wording instead.
+const PREVIEW = ['localhost','127.0.0.1'].includes(location.hostname);
+function previewMap(){
+  const here=hereIndex();
+  return {
+    week:'[PREVIEW SAMPLE: the real AI writes this.] '+S.name+', your '+(S.pockets[0]||'time').toLowerCase()+' become your business hours.\n\nNothing in the evenings unless you choose it.',
+    income:'[PREVIEW SAMPLE] A reaction to her numbers'+(S.meaning?', tied to what she said the money would do.':'.'),
+    sittingOn:'[PREVIEW SAMPLE] What her experience ("'+S.raw.slice(0,60)+'") is worth as raw material.',
+    route:ROUTE.map((r,i)=>({leg:r.leg,plan:'[PREVIEW SAMPLE] '+(i<here?'Credits what she already has.':i===here?'Where she starts, and what this looks like in her hours.':'What this leg will give her.')})),
+    gap:'[PREVIEW SAMPLE] Speaks to what held her back ("'+S.blocker+'"), then leads into: '+pickOffer().name+'.'
+  };
+}
 async function generateMap(){
+  if(PREVIEW){ renderMap(previewMap()); return; }
   go('s-loading');
   let i=0;
   document.getElementById('loadMsg').textContent=LOAD_MSGS[0];
@@ -777,7 +914,7 @@ async function generateMap(){
         }
       }
     }
-    if(!parsed||!parsed.week||!parsed.sittingOn||!parsed.gap||!Array.isArray(parsed.momentum)) throw new Error('Could not build your Map');
+    if(!parsed||!parsed.week||!parsed.sittingOn||!parsed.gap||!Array.isArray(parsed.route)||parsed.route.length<4) throw new Error('Could not build your Map');
     clearInterval(loadTimer);
     renderMap(parsed);
   }catch(err){
@@ -809,9 +946,17 @@ function renderMap(m){
 
   document.getElementById('secSitting').innerHTML=paras(m.sittingOn);
 
-  document.getElementById('secMomentum').innerHTML=m.momentum.slice(0,3).map(x=>
-    '<div class="pillar"><span class="p-name">'+esc(x.pillar)+'</span><br>'+esc(x.plan)+'</div>'
-  ).join('');
+  const here=hereIndex();
+  document.getElementById('secRoute').innerHTML=ROUTE.map((r,i)=>{
+    const plan=(m.route[i]&&m.route[i].plan)||'';
+    const cls=i<here?'done':i===here?'here':'';
+    const badge=i===here?'<span class="here-badge">You are here</span>':'';
+    return '<li class="'+cls+'"><span class="dot"></span><span class="leg">'+esc(r.leg)+'</span><span class="phases">'+esc(r.phases)+'</span>'+badge+'<p>'+esc(plan)+'</p></li>';
+  }).join('');
+  const t=TESTIMONIALS[S.stage];
+  document.getElementById('testimonial').innerHTML = t
+    ? '<div class="t-head">'+esc(t.head)+'</div><p>'+esc(t.quote)+'</p><div class="t-who">'+esc(t.who)+' · Have It All Academy</div>'
+    : '';
 
   document.getElementById('secGap').innerHTML=paras(m.gap);
 
@@ -828,7 +973,81 @@ function renderMap(m){
       '<a class="alt-btn" href="'+alt.url+'" target="_blank" rel="noopener">'+esc(alt.altButton)+'</a>'
     : '';
 
+  S.map=m;
   go('s-map');
+}
+
+// ================================================================
+// KEEP YOUR MAP: plain-text version, AI download, send to Kartra
+// ================================================================
+function mapAsText(){
+  const m=S.map||{}; const here=hereIndex();
+  const L=[];
+  L.push('# '+S.name+'’s Family-First Business Map','');
+  L.push('## My answers');
+  L.push('- Hours a week: '+S.hours);
+  L.push('- When I work: '+S.pockets.join(', '));
+  L.push('- Where I am right now: '+(STAGES[S.stage-1]||''));
+  if(S.delivery.length) L.push('- How I work with people now: '+S.delivery.join(', '));
+  L.push('- What people come to me for / what I do: '+S.raw);
+  L.push('- What has held me back most: '+S.blocker);
+  L.push('- Income goal: '+S.cur+fmt(S.goal)+' extra a month');
+  if(S.meaning) L.push('- What that money would do: '+S.meaning);
+  L.push('','## Your Week',m.week||'','');
+  L.push('## Your Income Map','To reach '+S.cur+fmt(S.goal)+' a month: '+PRICES.map(p=>S.cur+p+' = '+salesNeeded(p)+' sales a week').join(' · ')+' (projections, not promises)',m.income||'','');
+  L.push('## What You’re Sitting On',m.sittingOn||'','');
+  L.push('## Your Route');
+  ROUTE.forEach((r,i)=>L.push('- '+r.leg+' ('+r.phases+')'+(i===here?' ← YOU ARE HERE':'')+': '+((m.route&&m.route[i]&&m.route[i].plan)||'')));
+  L.push('','## What’s missing',m.gap||'','');
+  L.push('Made with the Family-First Business Map by Suzy Olivier, Mothers of Enterprise');
+  return L.join('\n');
+}
+// Short version for Kartra (365-character field limit): where she starts + the first line of that leg.
+function startingPoint(){
+  const r=ROUTE[hereIndex()];
+  const plan=(S.map&&S.map.route&&S.map.route[hereIndex()]&&S.map.route[hereIndex()].plan)||'';
+  const first=(plan.match(/^.*?[.!?](\s|$)/)||[plan])[0].trim();
+  return (r.leg+' ('+r.phases+'). '+first).slice(0,360);
+}
+// Everything the saved Map page needs, already worked out (the server just displays it).
+function mapView(){
+  const m=S.map||{}, here=hereIndex(), offer=pickOffer();
+  return {
+    name:S.name, week:m.week, income:m.income, sittingOn:m.sittingOn, gap:m.gap,
+    incomeGoal:'Your goal: '+S.cur+fmt(S.goal)+' extra a month.',
+    incomeRows:PRICES.map(p=>'At '+S.cur+p+', that’s '+salesNeeded(p)+' sales a week'),
+    route:ROUTE.map((r,i)=>({leg:r.leg,phases:r.phases,plan:(m.route&&m.route[i]&&m.route[i].plan)||'',state:i<here?'done':i===here?'here':'ahead'})),
+    testimonial:TESTIMONIALS[S.stage]||null,
+    cta:{headline:offer.headline,body:offer.body,button:offer.button,url:offer.url}
+  };
+}
+function downloadForAI(){
+  const intro='This is my Family-First Business Map. Please read it and use it as background on me, my time, my goal and where I am starting from whenever you help me with my business.\n\n';
+  const blob=new Blob([intro+mapAsText()],{type:'text/markdown'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(S.name||'My')+'-Family-First-Map.md';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+async function sendMap(){
+  const email=document.getElementById('inEmail').value.trim();
+  const msg=document.getElementById('keepMsg'), btn=document.getElementById('btnKeep');
+  msg.style.display='block';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ msg.textContent='That email doesn’t look quite right, lovely.'; msg.style.color='var(--pink)'; return; }
+  if(!CONFIG.kartraActive){ msg.textContent='Sending is switched off right now. Use "Download for my AI" or "Print my Map" to keep it.'; return; }
+  btn.disabled=true; msg.style.color='var(--teal)'; msg.textContent='Sending...';
+  try{
+    const res=await fetch('/api/lead',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+      email, name:S.name, stage:S.stage, blocker:S.blocker, hours:S.hours, pockets:S.pockets,
+      delivery:S.delivery, raw:S.raw, goal:S.cur+fmt(S.goal)+' extra a month', meaning:S.meaning, report:startingPoint(), view:mapView()
+    })});
+    const out=await res.json().catch(()=>({}));
+    if(!res.ok||!out.ok) throw new Error(out.error||'failed');
+    msg.textContent='Done. Your Map is on its way to your inbox.';
+  }catch(e){
+    btn.disabled=false; msg.style.color='var(--pink)';
+    msg.textContent='That didn’t send, sorry. Try again, or use "Download for my AI" to keep it now.';
+  }
 }
 
 // enter key on name field
